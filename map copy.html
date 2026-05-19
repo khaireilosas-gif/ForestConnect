@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>MyGeoApp – Illegal Logging In Malaysia</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Leaflet Core -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+  <!-- Routing Machine -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
+  <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
+
+  <!-- Geocoder (for address search) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+  <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+  <!-- Other Optional Tools -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.css" />
+  <script src="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-draw/dist/leaflet.draw.css" />
+  <script src="https://unpkg.com/leaflet-draw/dist/leaflet.draw.js"></script>
+  <link rel="stylesheet" href="https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css" />
+  <script src="https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-measure/dist/leaflet-measure.css" />
+  <script src="https://cdn.jsdelivr.net/npm/leaflet-measure/dist/leaflet-measure.min.js"></script>
+
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; }
+    h3 { text-align: center; margin: 10px 0; }
+    #map { height: 90vh; width: 100%; }
+    #routeBox {
+      background: #f7f7f7;
+      padding: 6px;
+      border-bottom: 1px solid #ccc;
+      text-align: center;
+    }
+    input {
+      width: 160px;
+      margin: 2px;
+      padding: 4px;
+    }
+    button {
+      padding: 4px 10px;
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover { background: #0056b3; }
+  </style>
+</head>
+
+<body>
+  <h3>Illegal Logging In Malaysia</h3>
+
+  <!-- 🌍 Routing input box -->
+  <div id="routeBox">
+    Start (address): <input id="start" value="Melaka">
+    End (address): <input id="end" value="Kota Bharu">
+    <button onclick="makeRoute()">Route</button>
+  </div>
+
+  <div id="map"></div>
+
+  <script>
+    // Initialize map
+    const map = L.map('map').setView([4.5, 101], 6);
+
+    // Base map
+    const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // ===============================
+    // 🛰️ Live Location + Tools
+    // ===============================
+    L.control.locate({ position: 'topleft', flyTo: true }).addTo(map);
+    L.control.fullscreen({ position: 'topleft' }).addTo(map);
+    L.control.measure({
+      position: 'topleft',
+      primaryLengthUnit: 'meters',
+      secondaryLengthUnit: 'kilometers',
+      primaryAreaUnit: 'sqmeters'
+    }).addTo(map);
+
+    // ===============================
+    // ✏️ Drawing tools
+    // ===============================
+    const drawnItems = new L.FeatureGroup();
+    map.addLayer(drawnItems);
+    const drawControl = new L.Control.Draw({ edit: { featureGroup: drawnItems } });
+    map.addControl(drawControl);
+    map.on(L.Draw.Event.CREATED, function (e) {
+      const layer = e.layer;
+      drawnItems.addLayer(layer);
+      console.log("Drawn GeoJSON:", JSON.stringify(layer.toGeoJSON()));
+    });
+
+    // ===============================
+    // 🌐 GeoServer Layers (WMS + WFS)
+    // ===============================
+    const wmsLayer = L.tileLayer.wms('http://localhost:8080/geoserver/forestconnect/wms', {
+      layers: '	forestconnect:illegal logging',
+      format: 'image/png',
+      transparent: true
+    }).addTo(map);
+
+    fetch('http://localhost:8080/geoserver/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=forestconnect:illegal_logging&outputFormatlogging&outputFormat=application/json')
+      .then(res => res.json())
+      .then(data => {
+        L.geoJSON(data, {
+          onEachFeature: (feature, layer) => {
+            layer.bindPopup(`<b>${feature.properties.name}</b><br>${feature.properties.description}`);
+          }
+        }).addTo(map);
+      });
+
+    // ===============================
+    // 🧭 Routing with Address Search
+    // ===============================
+    let routingControl;
+    const geocoder = L.Control.Geocoder.nominatim();
+
+    function makeRoute() {
+      const startAddress = document.getElementById('start').value;
+      const endAddress = document.getElementById('end').value;
+
+      if (!startAddress || !endAddress) {
+        alert("Please enter both start and end addresses.");
+        return;
+      }
+
+      geocoder.geocode(startAddress, function(startResults) {
+        if (startResults.length === 0) {
+          alert("Start address not found!");
+          return;
+        }
+        const start = startResults[0].center;
+
+        geocoder.geocode(endAddress, function(endResults) {
+          if (endResults.length === 0) {
+            alert("End address not found!");
+            return;
+          }
+          const end = endResults[0].center;
+
+          if (routingControl) {
+            routingControl.setWaypoints([start, end]);
+          } else {
+            routingControl = L.Routing.control({
+              waypoints: [start, end],
+              routeWhileDragging: true,
+              geocoder: geocoder
+            }).addTo(map);
+          }
+        });
+      });
+    }
+
+    // ===============================
+    // 🗂️ Layer Control
+    // ===============================
+    const overlayMaps = { "GeoServer (WMS)": wmsLayer, "Drawn Features": drawnItems };
+    L.control.layers({ "OpenStreetMap": osm }, overlayMaps).addTo(map);
+
+  </script>
+</body>
+</html>
+uvicorn main:app --reload

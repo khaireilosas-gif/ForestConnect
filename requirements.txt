@@ -1,7 +1,7 @@
 fastapi
 uvicorn
 psycopg2-binary
-requests
 pydantic
-google-genai
 python-multipart
+requests
+google-genai
