@@ -1,13 +1,14 @@
 document.addEventListener('DOMContentLoaded', () => {
     
+    // Global API Configuration (Points directly to your live backend)
+    const API_BASE_URL = 'https://forestconnect.onrender.com';
+
     // ==========================================
     // 1. THEME TOGGLE (DARK/LIGHT MODE)
     // ==========================================
-    // Target the exact ID of the button
     const toggleBtn = document.getElementById('theme-toggle'); 
     const body = document.body;
     
-    // Check browser memory when the page loads
     if (localStorage.getItem('theme') === 'dark') {
         body.classList.add('dark-mode');
         if (toggleBtn) toggleBtn.innerHTML = '☀️ Light'; 
@@ -16,12 +17,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (toggleBtn) toggleBtn.innerHTML = '🌙 Dark'; 
     }
     
-    // Listen for the click
     if (toggleBtn) {
         toggleBtn.addEventListener('click', () => {
             body.classList.toggle('dark-mode');
             
-            // Check if it is currently dark or light after the click
             if (body.classList.contains('dark-mode')) {
                 localStorage.setItem('theme', 'dark');
                 toggleBtn.innerHTML = '☀️ Light'; 
@@ -31,8 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-
-    // ... (Keep the rest of your script.js code below this!)
 
     // --- B. Mobile Hamburger Menu ---
     const menuIcon = document.getElementById('menu-icon');
@@ -50,15 +47,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let lastScrollTop = 0;
 
     if (navbar) {
-        // 1. For Normal Pages (Scroll the whole window)
         window.addEventListener('scroll', () => {
-            if (sidebar) return; // Skip this if we are on the dashboard
+            if (sidebar) return; 
             let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
             if (scrollTop > 50) navbar.style.top = (scrollTop > lastScrollTop) ? "-100px" : "0";
             lastScrollTop = scrollTop <= 0 ? 0 : scrollTop; 
         }, { passive: true });
 
-        // 2. For Dashboard Pages (Scroll the sidebar only)
         if (sidebar) {
             sidebar.addEventListener('scroll', () => {
                 let scrollTop = sidebar.scrollTop;
@@ -67,7 +62,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }, { passive: true });
         }
     }
-
 
     // ==========================================
     // PART 2: MAP DASHBOARD (RUNS ONLY ON MAP PAGE)
@@ -113,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- B. Load Map Data (Apple-Style Pins & Heatmap) ---
         async function fetchLiveReports() {
             try {
-                const response = await fetch('http://127.0.0.1:8000/api/reports?t=' + new Date().getTime());
+                const response = await fetch(`${API_BASE_URL}/api/reports?t=${new Date().getTime()}`);
                 const data = await response.json();
                 
                 markersLayer.clearLayers();
@@ -142,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <div style="position: relative; width: 75px; height: 75px; filter: drop-shadow(0px 8px 12px ${shadowColor}); transition: transform 0.2s;">
                                 <div style="width: 100%; height: 100%; background: white; border-radius: 18px; padding: 3px; box-sizing: border-box; position: relative; z-index: 2;">
                                     <div style="width: 100%; height: 100%; border-radius: 14px; overflow: hidden; position: relative;">
-                                        <img src="http://127.0.0.1:8000${report.image_url}" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                                        <img src="${API_BASE_URL}${report.image_url}" style="width: 100%; height: 100%; object-fit: cover; display: block;">
                                         <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: 50%; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);"></div>
                                         <div style="position: absolute; bottom: 4px; left: 8px; color: white; font-family: -apple-system, sans-serif; font-size: 15px; font-weight: bold;">${displayNum}</div>
                                     </div>
@@ -167,7 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     `;
                     
                     if (report.image_url && report.image_url !== "[null]") {
-                        popupHtml += `<img src="http://127.0.0.1:8000${report.image_url}" class="popup-custom-img">`;
+                        popupHtml += `<img src="${API_BASE_URL}${report.image_url}" class="popup-custom-img">`;
                     }
                     popupHtml += `</div>`;
                     
@@ -175,7 +169,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 if (heatCoordinates.length > 0) {
-                    // Requires leaflet-heat.js to be loaded in the HTML
                     try {
                         heatLayer = L.heatLayer(heatCoordinates, { 
                             radius: 35, blur: 25, maxZoom: 12, minOpacity: 0.5, gradient: {0.4: 'blue', 0.6: 'lime', 0.8: 'orange', 1.0: 'red'} 
@@ -196,35 +189,46 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // --- C. Location & Map Click Logic ---
-        // --- C. Smart Navbar Hiding ---
-    const navbar = document.querySelector('.navbar');
-    const sidebar = document.getElementById('sidebar');
-    let lastWindowScroll = 0;
-    let lastSidebarScroll = 0;
+        const mapNavbar = document.querySelector('.navbar');
+        const mapSidebar = document.getElementById('sidebar');
+        let lastWindowScroll = 0;
+        let lastSidebarScroll = 0;
 
-    if (navbar) {
-        // 1. Listen to the main window scrolling (Works for Hero Video pages & Normal pages)
-        window.addEventListener('scroll', () => {
-            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            if (scrollTop > 50) {
-                navbar.style.top = (scrollTop > lastWindowScroll) ? "-100px" : "0";
-            } else {
-                navbar.style.top = "0"; // Always show at the absolute top of the page
-            }
-            lastWindowScroll = scrollTop <= 0 ? 0 : scrollTop; 
-        }, { passive: true });
-
-        // 2. Listen to the sidebar scrolling (Works when user is filling out the form)
-        if (sidebar) {
-            sidebar.addEventListener('scroll', () => {
-                let scrollTop = sidebar.scrollTop;
+        if (mapNavbar) {
+            window.addEventListener('scroll', () => {
+                let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
                 if (scrollTop > 50) {
-                    navbar.style.top = (scrollTop > lastSidebarScroll) ? "-100px" : "0";
+                    mapNavbar.style.top = (scrollTop > lastWindowScroll) ? "-100px" : "0";
+                } else {
+                    mapNavbar.style.top = "0"; 
                 }
-                lastSidebarScroll = scrollTop <= 0 ? 0 : scrollTop; 
+                lastWindowScroll = scrollTop <= 0 ? 0 : scrollTop; 
             }, { passive: true });
+
+            if (mapSidebar) {
+                mapSidebar.addEventListener('scroll', () => {
+                    let scrollTop = mapSidebar.scrollTop;
+                    if (scrollTop > 50) {
+                        mapNavbar.style.top = (scrollTop > lastSidebarScroll) ? "-100px" : "0";
+                    }
+                    lastSidebarScroll = scrollTop <= 0 ? 0 : scrollTop; 
+                }, { passive: true });
+            }
         }
-    }
+
+        // Map Click Tracking for Registration
+        map.on('click', (e) => {
+            selectedLat = e.latlng.lat;
+            selectedLng = e.latlng.lng;
+            
+            if (tempMarker) map.removeLayer(tempMarker);
+            tempMarker = L.marker([selectedLat, selectedLng], { icon: goldIcon }).addTo(map);
+            
+            const coordBox = document.getElementById('coord-box');
+            if (coordBox) {
+                coordBox.innerHTML = `Lat: ${selectedLat.toFixed(4)} , Lng: ${selectedLng.toFixed(4)}`;
+            }
+        });
 
         // --- D. Form Submission Logic ---
         const submitBtn = document.getElementById('submit-btn');
@@ -249,7 +253,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (imageInput.files.length > 0) { formData.append("file", imageInput.files[0]); }
 
                 try {
-                    const response = await fetch('http://127.0.0.1:8000/api/reports', { method: 'POST', body: formData });
+                    const response = await fetch(`${API_BASE_URL}/api/reports`, { method: 'POST', body: formData });
                     
                     if(response.ok) {
                         alert("✅ SUCCESS! Report saved to Database."); 
@@ -267,7 +271,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         alert("❌ Backend Error: " + (errorData.detail || "Database rejected it."));
                     }
                 } catch (error) { 
-                    alert("❌ Connection lost! Is main.py running?"); 
+                    alert("❌ Connection lost! Is the live cloud server active?"); 
                 } finally {
                     submitBtn.innerHTML = "Submit Report"; 
                 }
@@ -285,7 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(togglePhotosEl) togglePhotosEl.checked = false;
 
                 try {
-                    const response = await fetch('http://127.0.0.1:8000/api/hotspots');
+                    const response = await fetch(`${API_BASE_URL}/api/hotspots`);
                     const result = await response.json();
                     
                     if (result.status === "error") { alert("⚠️ " + result.message); hotspotBtn.innerHTML = "🔥 Run Getis-Ord Gi* Analysis"; return; }
@@ -309,7 +313,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     alert("✅ Getis-Ord Gi* Analysis Complete!");
                 } catch (error) {
-                    alert("❌ Failed to run spatial analysis. Is main.py running?");
+                    alert("❌ Failed to run spatial analysis. Is the live cloud server active?");
                 }
                 hotspotBtn.innerHTML = "🔥 Run Getis-Ord Gi* Analysis";
             });
@@ -343,7 +347,7 @@ document.addEventListener('DOMContentLoaded', () => {
             aiChatOutput.scrollTop = aiChatOutput.scrollHeight;
 
             try {
-                const response = await fetch('http://127.0.0.1:8000/api/forest-ai', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question: userText }) });
+               const response = await fetch(`${API_BASE_URL}/api/forest-ai`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question: userText }) });
                 const data = await response.json();
                 document.getElementById(loadingId).remove();
 
@@ -366,7 +370,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } catch (error) {
                 if (document.getElementById(loadingId)) document.getElementById(loadingId).remove();
-                aiChatOutput.innerHTML += `<div style="color: #d32f2f; margin-bottom: 15px;">⚠️ Connection failed. Is the FastAPI server active?</div>`;
+                aiChatOutput.innerHTML += `<div style="color: #d32f2f; margin-bottom: 15px;">⚠️ Connection failed. Is the live cloud server active?</div>`;
             }
             aiChatOutput.scrollTop = aiChatOutput.scrollHeight;
         });
