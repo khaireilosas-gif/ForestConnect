@@ -18,7 +18,7 @@ GEMINI_API_KEY = "AIzaSyCk5UNaroLMOXni_lRRVGPW10H9wL5Rxac"
 client = genai.Client(api_key=GEMINI_API_KEY)
 
 # Connected directly to Render Cloud Database
-DATABASE_URL = "postgresql://forestconnect_db_user:b6uaz0jAo7TsUSuOdTEN6WVYhw80gdoE@dpg-d85thc0jo89c7380gd3g-a/forestconnect_db"
+DATABASE_URL = "postgresql://forestconnect_db_user:b6uaz0jAo7TsUSuOdTEN6WVYhw80gdoE@dpg-d85thc0jo89c7380gd3g-a.singapore-postgres.render.com/forestconnect_db"
 
 app = FastAPI()
 
