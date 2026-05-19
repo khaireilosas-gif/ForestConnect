@@ -3,6 +3,7 @@ import shutil
 import requests
 import re
 import math
+import uvicorn
 from fastapi import FastAPI, HTTPException, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -17,9 +18,8 @@ from google import genai
 GEMINI_API_KEY = "AIzaSyCk5UNaroLMOXni_lRRVGPW10H9wL5Rxac" 
 client = genai.Client(api_key=GEMINI_API_KEY)
 
-# Connected directly to Render Cloud Database
-DATABASE_URL = "postgresql://forestconnect_db_user:b6uaz0jAo7TsUSuOdTEN6WVYhw80gdoE@dpg-d85thc0jo89c7380gd3g-a.singapore-postgres.render.com/forestconnect_db"
-
+# Connected directly to Render Cloud Database with SSL!
+DATABASE_URL = "postgresql://forestconnect_db_user:b6uaz0jAo7TsUSuOdTEN6WVYhw80gdoE@dpg-d85thc0jo89c7380gd3g-a.singapore-postgres.render.com/forestconnect_db?sslmode=require"
 app = FastAPI()
 
 app.add_middleware(
@@ -275,3 +275,11 @@ def get_getis_ord_hotspots():
     except Exception as e:
         print(f"❌ HOTSPOT ANALYSIS ERROR: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+# ==========================================
+# 5. SERVER ENTRY POINT (CRITICAL FOR CLOUD)
+# ==========================================
+if __name__ == "__main__":
+    # Render assigns a dynamic port. If testing locally, it defaults to 8000.
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
