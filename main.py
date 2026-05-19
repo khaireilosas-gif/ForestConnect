@@ -232,7 +232,7 @@ def haversine_distance(lat1, lon1, lat2, lon2):
     return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
 @app.get("/api/hotspots")
-def return {"status": "error", "message": "Not enough data for statistical analysis (minimum 3 required)."}():
+def get_getis_ord_hotspots():
     print("\n🔥 Running Getis-Ord Gi* Spatial Analysis...")
     conn = get_db_connection()
     try:
@@ -243,4 +243,50 @@ def return {"status": "error", "message": "Not enough data for statistical analy
         conn.close()
 
         if len(reports) < 3:
-            return {"status": "error",
+            return {"status": "error", "message": "Not enough data for statistical analysis (minimum 3 required)."}
+
+        # Step 1: Calculate Local Density (Neighbors within 15km threshold)
+        threshold_km = 15.0 
+        local_counts = []
+        
+        for p1 in reports:
+            neighbors = sum(1 for p2 in reports if haversine_distance(p1["lat"], p1["lng"], p2["lat"], p2["lng"]) <= threshold_km)
+            local_counts.append(neighbors)
+
+        # Step 2: Calculate Global Mean and Standard Deviation
+        n = len(reports)
+        global_mean = sum(local_counts) / n
+        variance = sum((x - global_mean) ** 2 for x in local_counts) / n
+        std_dev = math.sqrt(variance)
+
+        # Step 3: Calculate Z-Scores and Assign Pinpoint Categories
+        for i, report in enumerate(reports):
+            if std_dev == 0:
+                z_score = 0 
+            else:
+                z_score = (local_counts[i] - global_mean) / std_dev
+            
+            report["z_score"] = round(z_score, 3)
+            
+            # 95% Confidence Interval Classification
+            if z_score >= 1.96:
+                report["cluster_type"] = "HOTSPOT"
+            elif z_score <= -1.96:
+                report["cluster_type"] = "COLDSPOT"
+            else:
+                report["cluster_type"] = "NOT_SIGNIFICANT"
+
+        print("✅ Analysis Complete! Sending clustered pinpoints to map.")
+        return {"status": "success", "data": reports}
+
+    except Exception as e:
+        print(f"❌ HOTSPOT ANALYSIS ERROR: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ==========================================
+# 5. SERVER ENTRY POINT (CRITICAL FOR CLOUD)
+# ==========================================
+if __name__ == "__main__":
+    # Render assigns a dynamic port. If testing locally, it defaults to 8000.
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
