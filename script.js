@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     
     // Global API Configuration (Points directly to your live backend)
-    const API_BASE_URL = 'https://forestconnect.onrender.com';
+    const API_BASE_URL = 'https://forestconnect-7.onrender.com';
 
     // ==========================================
     // 1. THEME TOGGLE (DARK/LIGHT MODE)
