@@ -155,11 +155,10 @@ h1, h2, h3, h4 { color: var(--heading-color); }
 .instructions { 
     position: absolute; top: 15px; right: 15px; background: var(--card-bg); 
     padding: 8px 15px; border-radius: 20px; box-shadow: var(--shadow); 
-    z-index: 400; /* 🚨 LOWERED FROM 1000 so the mobile menu covers it safely */
+    z-index: 400; 
     font-weight: bold; font-size: 13px; color: #2e7d32; pointer-events: none; 
 }
 
-/* Also ensure your Navbar is always the highest element on the page */
 .navbar { z-index: 9999; }
 
 .custom-svg-pin, .custom-photo-pin { background: transparent !important; border: none !important; box-shadow: none !important; }
@@ -199,15 +198,11 @@ body.dark-mode .card-video { opacity: 0.8; }
 .interactive-link { text-decoration: none; color: inherit; position: relative; display: inline-block; cursor: pointer; }
 .interactive-link:hover { color: var(--primary-color); }
 
-footer { text-align: center; padding: 20px; background: #111; color: #fff; }
 
 /* =========================================
    8. MOBILE RESPONSIVENESS (NATIVE APP FEEL)
    ========================================= */
 @media (max-width: 768px) {
-    /* Prevent the main body from scrolling so the map acts like an app */
-    body { overflow: hidden !important; }
-
     /* Navbar Shrink */
     .navbar { padding: 12px 20px; z-index: 9999; }
     .navbar h1 { font-size: 20px; }
@@ -219,6 +214,8 @@ footer { text-align: center; padding: 20px; background: #111; color: #fff; }
         display: none; flex-direction: column; position: absolute; top: 100%; left: 0; 
         width: 100%; padding: 20px 0; text-align: center; z-index: 9999;
         box-shadow: 0 5px 15px rgba(0,0,0,0.5); background-color: var(--card-bg);
+        max-height: 75vh; /* Prevents menu from pushing past screen bottom */
+        overflow-y: auto; /* Allows menu to scroll if there are many links */
     }
     .nav-links a { color: var(--text-color); font-size: 18px; }
     body.dark-mode .nav-links { background-color: var(--nav-bg); } 
@@ -226,29 +223,34 @@ footer { text-align: center; padding: 20px; background: #111; color: #fff; }
     .nav-links.active { display: flex; }
     .nav-links li { margin: 15px 0; }
 
-    /* 🚨 HIDE HERO VIDEO ON MOBILE FOR MAX MAP SPACE 🚨 */
-    .report-hero { display: none !important; }
+    /* 🚨 FIX: Standard Pages (Data Sources, etc.) 🚨 */
+    .container {
+        padding: 100px 5% 40px 5% !important; /* Pushes content down so navbar doesn't cover it */
+        display: block !important; /* Brings your missing text back */
+    }
 
-    /* 🚨 TRUE FULLSCREEN DASHBOARD 🚨 */
+    /* Hide non-essential layout classes on mobile */
+    .split-layout, .hero, .report-hero { display: none !important; }
+
+    /* 🚨 TRUE FLEXBOX DASHBOARD (Respects Footer & Scrolling) 🚨 */
     .dashboard-wrapper { 
-        position: absolute;
-        top: 60px; /* Sits exactly under navbar */
-        left: 0;
-        width: 100%; 
-        height: calc(100vh - 60px); 
-        margin: 0; 
-        border-radius: 0; 
-        border: none;
+        position: relative; /* Keeps it in normal page flow! */
+        width: 95%; 
+        height: 85vh; /* Takes up most of the mobile screen */
+        margin: 90px auto 40px auto; /* Clears navbar at top, space at bottom */
+        border-radius: 16px; 
+        border: 1px solid var(--border-color);
         flex-direction: column;
-        box-shadow: none;
+        display: flex; /* Stacks the map and sidebar cleanly */
+        overflow: hidden; 
+        box-shadow: var(--shadow);
         background: transparent;
     }
     
-    /* Map becomes the absolute background */
+    /* Map takes the top half */
     #map-container { 
-        position: absolute;
-        top: 0; left: 0;
-        height: 100%; 
+        position: relative;
+        height: 55%; 
         width: 100%; 
         z-index: 1;
         border: none;
@@ -256,34 +258,34 @@ footer { text-align: center; padding: 20px; background: #111; color: #fff; }
 
     /* Floating Centered Pill Instructions */
     .instructions {
-        top: 20px;
+        top: 15px;
         left: 50%;
         transform: translateX(-50%);
         right: auto;
         border-radius: 30px;
-        padding: 10px 20px;
-        font-size: 14px;
+        padding: 8px 16px;
+        font-size: 13px;
         box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         z-index: 10;
-        white-space: nowrap; /* Prevents text wrapping */
+        white-space: nowrap; 
     }
     
-    /* 🚨 THE BOTTOM SHEET DESIGN 🚨 */
+    /* 🚨 NATIVE BOTTOM SHEET FORM 🚨 */
     #sidebar { 
-        position: absolute;
-        bottom: 0; left: 0;
+        position: relative; /* Stops floating over the footer! */
         width: 100%; 
-        height: 45vh; /* Takes up bottom 45% of the screen */
-        border-right: none; 
+        height: 45%; /* Takes the bottom half */
         padding: 20px 20px 40px 20px; 
         background: var(--card-bg);
         z-index: 100;
-        border-radius: 24px 24px 0 0; /* iOS style rounded top corners */
-        box-shadow: 0 -5px 20px rgba(0,0,0,0.2); /* Shadow pointing upwards */
+        border-radius: 24px 24px 0 0; 
+        margin-top: -20px; /* Pulls it up slightly over the map for iOS look */
+        box-shadow: 0 -5px 20px rgba(0,0,0,0.2); 
         border-top: 1px solid var(--border-color);
+        overflow-y: auto; /* Restores smooth thumb scrolling inside the form */
     }
 
-    /* The tiny drag-handle line at the top of the sheet */
+    /* Drag-handle line at the top of the sheet */
     #sidebar::before {
         content: '';
         display: block;
@@ -294,18 +296,15 @@ footer { text-align: center; padding: 20px; background: #111; color: #fff; }
         margin: 0 auto 20px auto;
     }
 
-    /* Tweak text sizes inside the bottom sheet */
     #sidebar h2 { font-size: 18px; text-align: center; border: none; margin-bottom: 5px; padding: 0; }
     #sidebar > p { text-align: center; margin-bottom: 15px; }
-
-    /* Hide non-essential layout classes on mobile to save memory */
-    .split-layout, .container, .hero { display: none; }
 }
+
 /* =========================================
    9. FOOTER
    ========================================= */
 footer {
-    background-color: var(--nav-bg); /* Uses your Deep Forest Green! */
+    background-color: var(--nav-bg);
     color: #ecf0f1;
     text-align: center; 
     padding: 30px 20px; 
