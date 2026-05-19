@@ -13,16 +13,12 @@ from google import genai
 # ==========================================
 # 1. CONFIGURATION & SETUP
 # ==========================================
-GEMINI_API_KEY = "AIzaSyCk5UNaroLMOXni_lRRVGPW10H9wL5Rxac" # Move to .env before final deployment!
+# ⚠️ Security Note: It is best practice to move keys to Render Environment Variables later!
+GEMINI_API_KEY = "AIzaSyCk5UNaroLMOXni_lRRVGPW10H9wL5Rxac" 
 client = genai.Client(api_key=GEMINI_API_KEY)
 
-DB_CONFIG = {
-    "dbname": "forestconnect",
-    "user": "postgres",
-    "password": "123Tsaqif123", 
-    "host": "127.0.0.1",
-    "port": "5432"
-}
+# Connected directly to Render Cloud Database
+DATABASE_URL = "postgresql://forestconnect_db_user:b6uaz0jAo7TsUSuOdTEN6WVYhw80gdoE@dpg-d85thc0jo89c7380gd3g-a/forestconnect_db"
 
 app = FastAPI()
 
@@ -43,7 +39,8 @@ class UserQuery(BaseModel):
 
 def get_db_connection():
     try:
-        return psycopg2.connect(**DB_CONFIG)
+        # psycopg2 can read the URL string directly!
+        return psycopg2.connect(DATABASE_URL)
     except Exception as e:
         print(f"❌ Database connection error: {e}")
         return None
@@ -221,7 +218,7 @@ def get_stats():
 # ==========================================
 def haversine_distance(lat1, lon1, lat2, lon2):
     """Calculates distance in kilometers between two GPS points"""
-    R = 6371.0 # Earth radius in km
+    R = 6371.0 
     dLat = math.radians(lat2 - lat1)
     dLon = math.radians(lon2 - lon1)
     a = math.sin(dLat / 2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dLon / 2)**2
@@ -233,7 +230,6 @@ def get_getis_ord_hotspots():
     conn = get_db_connection()
     try:
         cursor = conn.cursor()
-        # Ensure we fetch an ID or a unique identifier to process
         cursor.execute("SELECT threat_type, description, lat, lng FROM reports")
         reports = [{"type": r[0], "desc": r[1], "lat": r[2], "lng": r[3]} for r in cursor.fetchall()]
         cursor.close()
@@ -259,7 +255,7 @@ def get_getis_ord_hotspots():
         # Step 3: Calculate Z-Scores and Assign Pinpoint Categories
         for i, report in enumerate(reports):
             if std_dev == 0:
-                z_score = 0 # Prevent division by zero if all points are equally spaced
+                z_score = 0 
             else:
                 z_score = (local_counts[i] - global_mean) / std_dev
             
