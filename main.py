@@ -232,7 +232,7 @@ def haversine_distance(lat1, lon1, lat2, lon2):
     return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
 @app.get("/api/hotspots")
-def get_getis_ord_hotspots():
+def return {"status": "error", "message": "Not enough data for statistical analysis (minimum 3 required)."}():
     print("\n🔥 Running Getis-Ord Gi* Spatial Analysis...")
     conn = get_db_connection()
     try:
