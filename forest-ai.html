@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forest AI - ForestConnect</title>
+    
+    <!-- Link to your main website stylesheet for the Navbar and Themes -->
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        /* Modify body to stack the navbar and the chat interface vertically */
+        body, html { 
+            margin: 0; padding: 0; 
+            height: 100vh; width: 100vw;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #f0f7f4; 
+            display: flex; 
+            flex-direction: column; /* Stacks children vertically */
+            overflow: hidden; /* Prevents whole page scrolling */
+        }
+
+        /* Force the navbar to behave nicely on a full-screen app */
+        .navbar {
+            position: relative; /* Overrides fixed positioning from style.css */
+            flex-shrink: 0; /* Prevents the navbar from shrinking */
+            z-index: 1000;
+        }
+
+        /* Wrapper to center the chat box below the navbar */
+        .chat-wrapper {
+            flex-grow: 1; /* Takes up all space below the navbar */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Styling for the chat interface */
+        .chat-container { 
+           width: 100%; 
+        max-width: 800px; 
+        margin: 40px auto; /* 🚨 THIS IS THE MISSING PIECE! It perfectly centers the box */
+        background: white; 
+        border-radius: 10px; 
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+        overflow: hidden; 
+        display: flex; 
+        flex-direction: column; 
+        height: 100%; 
+        max-height: 85vh;
+        }
+        .chat-header { 
+            background: #2E8B57; 
+            color: white; 
+            padding: 20px; 
+            text-align: center; 
+        }
+        .chat-header h1 { 
+            margin: 0; 
+            font-size: 24px; 
+        }
+        .chat-header p { 
+            margin: 5px 0 0 0; 
+            font-size: 14px; 
+            opacity: 0.9; 
+        }
+        .chat-messages { 
+            flex: 1; 
+            padding: 20px; 
+            overflow-y: auto; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px; 
+            background-color: #fafdfb; 
+        }
+        .message { 
+            max-width: 75%; 
+            padding: 12px 16px; 
+            border-radius: 8px; 
+            line-height: 1.5; 
+        }
+        .user-message { 
+            background-color: #e2f0cb; 
+            align-self: flex-end; 
+            border-bottom-right-radius: 0; 
+            color: #333; 
+        }
+        .ai-message { 
+            background-color: #ffffff; 
+            border: 1px solid #d0e8d0; 
+            align-self: flex-start; 
+            border-bottom-left-radius: 0; 
+            color: #333; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02); 
+        }
+        .input-area { 
+            display: flex; 
+            padding: 20px; 
+            background: white; 
+            border-top: 1px solid #eee; 
+        }
+        #user-input { 
+            flex: 1; 
+            padding: 12px; 
+            border: 1px solid #ccc; 
+            border-radius: 6px; 
+            outline: none; 
+            font-size: 16px; 
+        }
+        #user-input:focus { 
+            border-color: #2E8B57; 
+        }
+        #send-btn { 
+            background: #2E8B57; 
+            color: white; 
+            border: none; 
+            padding: 0 25px; 
+            margin-left: 10px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            transition: background 0.3s; 
+        }
+        #send-btn:hover { 
+            background: #246b43; 
+        }
+        .loading { 
+            font-style: italic; 
+            color: #666; 
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. IDENTICAL NAVBAR FROM MAIN PAGE -->
+    <nav class="navbar">
+        <div class="logo">
+            <img src="logo.png" alt="ForestConnect Logo">
+        </div>
+        
+        <div class="menu-icon" id="menu-icon">☰</div>
+
+        <ul class="nav-links" id="nav-links">
+         <li><a href="index.html">Home</a></li>
+        <li><a href="forest-reserve.html">Forest Reserve</a></li>
+         <li><a href="heritage.html" >Heritage</a></li>
+        <li><a href="tourism.html">Tourism</a></li>
+        <li><a href="deforestation.html">Deforestation</a></li>
+        <li><a href="animals.html">Fauna </a></li>
+        <li><a href="flora.html">Flora</a></li>
+        <li><a href="reports2.html" style="color: #e67e22; font-weight: bold;">Report</a></li>
+        <li><a href="hotline.html" style="color: #e74c3c; font-weight: bold;">Hotline</a></li>
+         <li><a href="forest-ai.html" style="color: #0077b6; font-weight: bold;">Forest AI</a></li>
+        <li><button id="theme-toggle" class="theme-btn">🌙 Dark</button></li>
+        </ul>
+    </nav>
+
+    <!-- 2. CHAT WRAPPER (Centers the chat box below the navbar) -->
+    <div class="chat-wrapper">
+        <div class="chat-container">
+            <div class="chat-header">
+                <h1>🌿 Forest AI</h1>
+                <p>Your expert guide to Malaysian forest heritage, flora, and fauna.</p>
+            </div>
+            
+            <div class="chat-messages" id="chat-messages">
+                <div class="message ai-message">
+                    Hello! I am Atan, integrated into ForestConnect. How can I help you learn about our forest ecosystems today?
+                </div>
+            </div>
+
+            <div class="input-area">
+                <input type="text" id="user-input" placeholder="Ask about forest reserves, wildlife, or plant species..." onkeypress="handleKeyPress(event)">
+                <button id="send-btn" onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Website Script (for Navbar and Theme Toggle) -->
+    <script src="script.js"></script>
+
+    <!-- Forest AI Specific Logic -->
+    <script>
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        async function sendMessage() {
+            const inputField = document.getElementById('user-input');
+            const messagesContainer = document.getElementById('chat-messages');
+            const question = inputField.value.trim();
+
+            if (question === '') return; 
+
+            // 1. Display User Message
+            const userMsgDiv = document.createElement('div');
+            userMsgDiv.className = 'message user-message';
+            userMsgDiv.textContent = question;
+            messagesContainer.appendChild(userMsgDiv);
+
+            inputField.value = '';
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            // 2. Loading Indicator
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'message ai-message loading';
+            loadingDiv.textContent = 'Please wait for Atan to search academic archives...';
+            messagesContainer.appendChild(loadingDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            try {
+                // 3. Fetch from Python Backend
+                const response = await fetch('http://127.0.0.1:8000/api/forest-ai', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question: question })
+                });
+
+                if (!response.ok) throw new Error('Server response was not ok.');
+                const data = await response.json();
+
+                // 4. Remove Loading
+                if (messagesContainer.contains(loadingDiv)) {
+                    messagesContainer.removeChild(loadingDiv);
+                }
+                
+                // 5. Build AI Response
+                const aiMsgDiv = document.createElement('div');
+                aiMsgDiv.className = 'message ai-message';
+                
+                // Format line breaks AND format bold **text** into actual <b>text</b>
+                let htmlContent = data.answer.replace(/\n/g, '<br>'); 
+                htmlContent = htmlContent.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+
+                // If sources exist, make the inline citations [1, 2] clickable!
+                if (data.sources && data.sources.length > 0) {
+                    htmlContent = htmlContent.replace(/\[([0-9,\s]+)\]/g, (match, p1) => {
+                        const numbers = p1.split(',').map(n => n.trim());
+                        const mappedLinks = numbers.map(num => {
+                            const source = data.sources.find(s => s.id == num);
+                            if (source && source.url && source.url !== '#') {
+                                return `<a href="${source.url}" target="_blank" style="color: #1a73e8; text-decoration: underline; font-weight: bold;" title="${source.title}">${num}</a>`;
+                            }
+                            return num; 
+                        });
+                        return `[${mappedLinks.join(', ')}]`;
+                    });
+
+                    // Append the bibliography at the bottom
+                    htmlContent += `
+                        <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #e0e0e0;">
+                            <span style="font-weight: bold; font-size: 0.85em; color: #555;">Academic Sources Retrieved:</span>
+                            <ul style="margin: 8px 0 0 0; padding-left: 18px; font-size: 0.85em;">`;
+                    
+                    data.sources.forEach(source => {
+                        const link = source.url ? source.url : '#';
+                        htmlContent += `<li style="margin-bottom: 8px; position: relative; z-index: 10;">
+                            <span style="color: #555; font-weight: bold;">[${source.id}]</span> 
+                            ${link !== '#' 
+                                ? `<a href="${link}" target="_blank" style="color: #1a73e8; text-decoration: none; font-weight: 500; cursor: pointer;">
+                                     ${source.title} (${source.year}) 🔗
+                                   </a>` 
+                                : `<span style="color: #333; font-weight: 500;">
+                                     ${source.title} (${source.year}) <i>(No link available)</i>
+                                   </span>`
+                            }
+                        </li>`;
+                    });
+                    htmlContent += `</ul></div>`;
+                } else {
+                    htmlContent += `<div style="margin-top: 15px; font-size: 0.85em; color: #d32f2f;"><i>Note: No specific academic papers were found for this exact query, so no links are available.</i></div>`;
+                }
+
+                aiMsgDiv.innerHTML = htmlContent;
+                messagesContainer.appendChild(aiMsgDiv);
+
+            } catch (error) {
+                console.error('Error connecting to backend:', error);
+                if (messagesContainer.contains(loadingDiv)) {
+                    messagesContainer.removeChild(loadingDiv);
+                }
+                
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'message ai-message';
+                errorDiv.style.color = 'red';
+                errorDiv.innerHTML = '<b>Connection Error:</b> Cannot reach the Forest AI backend. Please ensure your Python server is running.';
+                messagesContainer.appendChild(errorDiv);
+            }
+
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+    </script>
+</body>
+</html>
+
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2025 ForestConnect Project. Created for Educational Purposes.</p>
+            
+            <p>
+                <a href="sources.html" class="footer-link">Data Sources & Credits</a>
+                <span class="separator"></span>
+                
+            </p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+
+</body>
+</html>

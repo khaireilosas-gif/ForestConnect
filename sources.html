@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Sources & Credits</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+        }
+        h1 { color: #2c3e50; }
+        .source-category {
+            margin-bottom: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #2980b9;
+            border-left: 5px solid #2980b9;
+            padding-left: 10px;
+            margin-top: 0;
+        }
+        ul { list-style-type: none; padding: 0; }
+        li { margin-bottom: 15px; }
+        a { color: #27ae60; text-decoration: none; font-weight: bold; }
+        a:hover { text-decoration: underline; }
+        .description {
+            display: block;
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 4px;
+        }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 40px;
+            padding: 15px;
+            background-color: #2c3e50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            width: 150px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .back-link:hover { background-color: #34495e; text-decoration: none; }
+        
+        /* Dark mode support in case user navigates here with dark mode on */
+        body.dark-mode { background-color: #121212; color: #b0b0b0; }
+        body.dark-mode h1 { color: #fff; }
+        body.dark-mode .source-category { background-color: #1e1e1e; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        body.dark-mode .description { color: #aaa; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Data Sources & Acknowledgements</h1>
+        <p>This project utilizes open data, APIs, and open-source software from the following organizations.</p>
+    </header>
+
+    <div class="source-category">
+        <h2>Primary Data Sources</h2>
+        <ul>
+            <li>
+                <a href="https://www.dosm.gov.my/" target="_blank">Department of Statistics Malaysia (DOSM)</a>
+                <span class="description">Official national statistics for demographic and economic data.</span>
+            </li>
+            <li>
+                <a href="https://data.gov.my/" target="_blank">Data.gov.my (MAMPU)</a>
+                <span class="description">The official Malaysian Public Sector Open Data Portal.</span>
+            </li>
+            <li>
+                <a href="https://data.humdata.org/" target="_blank">The Humanitarian Data Exchange (HDX)</a>
+                <span class="description">Open data for humanitarian and development indicators.</span>
+            </li>
+        </ul>
+    </div>
+
+    <div class="source-category">
+        <h2>Geospatial Resources & Dashboards</h2>
+        <ul>
+            <li>
+                <a href="https://www.openstreetmap.org/" target="_blank">OpenStreetMap (OSM)</a>
+                <span class="description">Open-source geographic data used for interactive basemaps.</span>
+            </li>
+            <li>
+                <a href="https://earthexplorer.usgs.gov/" target="_blank">USGS Earth Explorer / NASA</a>
+                <span class="description">Source for satellite imagery (Landsat) and digital elevation models (SRTM).</span>
+            </li>
+            <li>
+                <a href="https://planet.com/nicfi" target="_blank">NICFI Satellite Data (Planet)</a>
+                <span class="description">High-resolution tropical forest imagery for environmental monitoring.</span>
+            </li>
+            <li>
+                <a href="https://www.esri.com/" target="_blank">Esri ArcGIS</a>
+                <span class="description">Embedded spatial data dashboards used for visualizing deforestation metrics.</span>
+            </li>
+        </ul>
+    </div>
+
+    <div class="source-category">
+        <h2>Artificial Intelligence & Academic APIs</h2>
+        <ul>
+            <li>
+                <a href="https://openalex.org/" target="_blank">OpenAlex API</a>
+                <span class="description">Open catalog of the global research system, used for retrieving scientific literature and localized forestry data.</span>
+            </li>
+            <li>
+                <a href="https://deepmind.google/technologies/gemini/" target="_blank">Google Gemini AI</a>
+                <span class="description">Large Language Model utilized for processing academic data and powering the Forest AI retrieval-augmented chat engine.</span>
+            </li>
+        </ul>
+    </div>
+
+    <div class="source-category">
+        <h2>Software & Technology Stack</h2>
+        <ul>
+            <li>
+                <a href="https://leafletjs.com/" target="_blank">Leaflet.js & Leaflet.heat</a>
+                <span class="description">The leading open-source JavaScript library for mobile-friendly interactive maps and heatmaps.</span>
+            </li>
+            <li>
+                <a href="https://supabase.com/" target="_blank">Supabase & PostgreSQL</a>
+                <span class="description">Open-source backend-as-a-service providing database infrastructure, image storage, and PostGIS spatial capabilities.</span>
+            </li>
+            <li>
+                <a href="https://fastapi.tiangolo.com/" target="_blank">FastAPI (Python)</a>
+                <span class="description">High-performance web framework utilized for backend spatial intelligence and Getis-Ord Gi* automated clustering.</span>
+            </li>
+        </ul>
+    </div>
+
+    <div class="source-category">
+        <h2>Media & Digital Assets</h2>
+        <ul>
+            <li>
+                <a href="https://www.pexels.com/" target="_blank">Pexels / Pixabay / Unsplash</a>
+                <span class="description">Royalty-free stock videos utilized for atmospheric backgrounds and educational impact demonstrations.</span>
+            </li>
+            <li>
+                <a href="https://fonts.google.com/" target="_blank">Google Fonts</a>
+                <span class="description">Typography integration (Montserrat).</span>
+            </li>
+        </ul>
+    </div>
+
+    <a href="index.html" class="back-link">← Back to Main Page</a>
+
+    <script>
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-mode');
+        }
+    </script>
+</body>
+</html>

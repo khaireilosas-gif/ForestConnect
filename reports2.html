@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ForestConnect | Live Threat Dashboard</title>
+    
+    <link rel="stylesheet" href="style.css">
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        /* 🚨 NEW: PAGE LAYOUT STYLES 🚨 */
+        body { 
+            margin: 0; padding: 0; 
+            background: #f4f7f6; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden; /* Allows vertical scrolling now! */
+        }
+        
+        /* 🚨 NEW: HERO VIDEO SECTION 🚨 */
+        .report-hero {
+            position: relative;
+            width: 100%;
+            height: 50vh; /* Takes up half the screen height */
+            margin-top: 70px; /* Pushes down below navbar */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .report-hero video {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            min-width: 100%; min-height: 100%;
+            z-index: -1;
+            object-fit: cover;
+        }
+
+        .report-hero .overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(2, 48, 32, 0.6); /* Deep green dark overlay */
+            z-index: 0;
+        }
+
+        .report-hero .hero-text {
+            z-index: 1; text-align: center; color: white;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        .report-hero h1 { font-size: 3.5rem; margin-bottom: 10px; color: white; text-shadow: 2px 2px 5px rgba(0,0,0,0.5); }
+        .report-hero p { font-size: 1.2rem; text-shadow: 1px 1px 3px rgba(0,0,0,0.5); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* 🚨 NEW: 80% BOXED DASHBOARD LAYOUT 🚨 */
+        .dashboard-wrapper { 
+            display: flex; 
+            width: 85%; /* Shrunk to 85% of the page width */
+            max-width: 1400px; /* Prevents it from getting too wide on huge monitors */
+            height: 75vh; /* Fixed height for the map */
+            margin: 40px auto 60px auto; /* Centers the box and adds spacing */
+            border-radius: 16px; /* Smooth rounded corners */
+            overflow: hidden; /* Clips the map to the rounded corners */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15); /* Premium floating shadow */
+            background: white;
+            border: 1px solid #ddd;
+        }
+        
+        /* Sidebar */
+        #sidebar { width: 350px; background: white; padding: 25px; z-index: 10; overflow-y: auto; display: flex; flex-direction: column; border-right: 1px solid #ddd; }
+        #sidebar h2 { color: #2e7d32; margin-top: 0; border-bottom: 2px solid #e8f5e9; padding-bottom: 10px; font-size: 22px; }
+        
+        /* Form Elements */
+        .coord-box { background: #e8f5e9; padding: 10px; border-radius: 6px; font-family: monospace; text-align: center; color: #1b5e20; margin-bottom: 20px; border: 1px dashed #4caf50; }
+        #sidebar label { font-weight: bold; font-size: 13px; margin-top: 15px; display: block; color: #333; }
+        #sidebar select, #sidebar textarea, #sidebar input[type="file"] { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; }
+        
+        /* Buttons */
+        #sidebar button { width: 100%; padding: 15px; margin-top: 25px; background: #1976D2; color: white; border: none; border-radius: 6px; font-weight: bold; font-size: 16px; cursor: pointer; transition: background 0.3s; }
+        #sidebar button:hover { background: #1565C0; }
+        #locate-btn { background: #27ae60 !important; margin-top: 5px !important; margin-bottom: 15px !important; padding: 10px !important; }
+        #locate-btn:hover { background: #219653 !important; }
+        
+        /* Map */
+        #map-container { flex-grow: 1; position: relative; }
+        #map { width: 100%; height: 100%; z-index: 1; }
+        .instructions { position: absolute; top: 20px; right: 20px; background: white; padding: 10px 20px; border-radius: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); z-index: 1000; font-weight: bold; color: #2e7d32; pointer-events: none; }
+        
+        /* Transparent SVG backgrounds */
+        .custom-svg-pin, .custom-photo-pin { background: transparent; border: none; }
+        
+        /* Toggle Switch Styling */
+        .layer-toggle { display: flex; align-items: center; cursor: pointer; font-size: 14px; font-weight: bold; color: #333; margin-top: 10px; padding: 10px; background: #f0f0f0; border-radius: 8px; border: 1px solid #ddd; }
+        .layer-toggle input { width: 18px; height: 18px; margin-right: 10px; cursor: pointer; }
+
+        /* REDESIGNED LEAFLET POPUP */
+        .leaflet-popup-content-wrapper { border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); padding: 0; overflow: hidden; }
+        .leaflet-popup-content { margin: 0; width: 280px !important; font-family: inherit; }
+        .popup-custom-header { background: #1b5e20; color: white; padding: 12px 15px; font-weight: bold; font-size: 15px; }
+        .popup-custom-header.critical { background: #e74c3c; }
+        .popup-custom-body { padding: 15px; }
+        .popup-custom-img { width: 100%; height: 160px; object-fit: cover; margin-top: 12px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .leaflet-popup-close-button { color: white !important; top: 10px !important; right: 10px !important; font-weight: bold; }
+        
+        /* Dark Mode compatibility */
+        body.dark-mode { background: #121212; }
+        body.dark-mode .dashboard-wrapper { background: #1a1a1a; border-color: #333; box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
+        body.dark-mode #sidebar { background: #1a1a1a; color: #f4f4f4; border-right: 1px solid #333; }
+        body.dark-mode #sidebar h2 { color: #2ecc71; border-bottom: 2px solid #333; }
+        body.dark-mode #sidebar label { color: #ccc; }
+        body.dark-mode .coord-box { background: #333; border-color: #2ecc71; color: #2ecc71; }
+        body.dark-mode select, body.dark-mode textarea { background: #2c2c2c; color: white; border-color: #444; }
+        body.dark-mode .layer-toggle { background: #333; border-color: #444; color: white; }
+        body.dark-mode .instructions { background: #333; color: #2ecc71; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo">
+            <img src="logo.png" alt="ForestConnect Logo">
+        </div>
+        <div class="menu-icon" id="menu-icon">☰</div>
+        <ul class="nav-links" id="nav-links">
+         <li><a href="index.html">Home</a></li>
+        <li><a href="forest-reserve.html">Forest Reserve</a></li>
+         <li><a href="heritage.html" >Heritage</a></li>
+        <li><a href="tourism.html">Tourism</a></li>
+        <li><a href="deforestation.html">Deforestation</a></li>
+        <li><a href="animals.html">Fauna </a></li>
+        <li><a href="flora.html">Flora</a></li>
+        <li><a href="reports2.html" style="color: #e67e22; font-weight: bold;">Report</a></li>
+        <li><a href="hotline.html" style="color: #e74c3c; font-weight: bold;">Hotline</a></li>
+         <li><a href="forest-ai.html" style="color: #0077b6; font-weight: bold;">Forest AI</a></li>
+        <li><button id="theme-toggle" class="theme-btn">🌙 Dark</button></li>
+    </nav>
+
+    <div class="report-hero">
+        <video autoplay loop muted playsinline>
+            <source src="my-forest-bg.mp4" type="video/mp4">
+        </video>
+        <div class="overlay"></div>
+        <div class="hero-text">
+            <h1>Live Threat Intelligence</h1>
+            <p>Help protect Malaysia's green heritage by reporting incidents directly to our spatial database.</p>
+        </div>
+    </div>
+
+    <div class="dashboard-wrapper">
+        <div id="sidebar">
+            <h2>Submit a Report</h2>
+            <p style="color: #666; font-size: 14px;">Select a location on the map.</p>
+            
+            <button type="button" id="locate-btn">📍 Use My Current Location</button>
+
+            <div class="coord-box" id="coord-box">Lat: --.---- , Lng: --.----</div>
+            
+            <form id="threat-form">
+                <label for="threat-type">Threat Type:</label>
+                <select id="threat-type">
+                    <option value="" disabled selected>-- Select Type --</option>
+                    <option value="Illegal Logging">Illegal Logging</option>
+                    <option value="Forest Fire">Forest Fire</option>
+                    <option value="Encroachment">Encroachment</option>
+                    <option value="Wildlife Poaching">Wildlife Poaching</option>
+                </select>
+
+                <label for="description">Detailed Description:</label>
+                <textarea id="description" rows="4" placeholder="Describe what you see..."></textarea>
+
+                <label for="report-image">Upload Photo (Optional):</label>
+                <input type="file" id="report-image" accept="image/*">
+
+                <button type="button" id="submit-btn">Submit Report</button>
+            </form>
+
+            <div style="margin-top: 30px; border-top: 2px solid #e8f5e9; padding-top: 20px;">
+                <h3 style="color: #2E7D32; font-size: 16px; margin-top: 0;">Map Layers</h3>
+                <label class="layer-toggle">
+                    <input type="checkbox" id="toggle-photos" checked>
+                    🖼️ Show Photos on Map
+                </label>
+            </div>
+
+            <div style="margin-top: 20px; border-top: 2px solid #e8f5e9; padding-top: 20px;">
+                <h3 style="color: #2E7D32; font-size: 16px; margin-top: 0;">Spatial Intelligence</h3>
+                <button type="button" id="hotspot-btn" style="background: #e67e22; margin-top: 5px;">🔥 Run Getis-Ord Gi* Analysis</button>
+                <button type="button" id="reset-map-btn" style="background: #7f8c8d; margin-top: 10px;">🔄 Reset to Normal Map</button>
+            </div>
+        </div>
+
+        <div id="map-container">
+            <div class="instructions">📍 Click the map to drop a pin</div>
+            <div id="map"></div>
+        </div>
+    </div> 
+
+    <script src="script.js"></script> 
+    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
+
+    <script>
+        // ==========================================
+        // 1. INITIALIZE MAP
+        // ==========================================
+        const map = L.map('map').setView([4.2105, 101.9758], 6);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+        
+        let tempMarker;
+        let selectedLat = null;
+        let selectedLng = null;
+        let heatLayer = null; 
+        const markersLayer = L.layerGroup().addTo(map);
+
+        // ==========================================
+        // 2. PIN GENERATORS
+        // ==========================================
+        const createPin = (color) => L.divIcon({
+            className: 'custom-svg-pin',
+            html: `<svg viewBox="0 0 24 24" width="32" height="42" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="${color}" stroke="#ffffff" stroke-width="1.5"/>
+                   </svg>`,
+            iconSize: [32, 42], iconAnchor: [16, 42], popupAnchor: [0, -42]
+        });
+
+        const blueIcon = createPin('#3498db'); 
+        const redIcon = createPin('#e74c3c');  
+        const goldIcon = createPin('#f1c40f'); 
+
+        const createStatPin = (color, text) => L.divIcon({
+            className: 'custom-svg-pin',
+            html: `<svg viewBox="0 0 24 24" width="32" height="42" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="${color}" stroke="#ffffff" stroke-width="1.5"/>
+                    <text x="12" y="13" font-size="8" text-anchor="middle" fill="white" font-weight="bold" font-family="sans-serif">${text}</text>
+                   </svg>`,
+            iconSize: [32, 42], iconAnchor: [16, 42], popupAnchor: [0, -42]
+        });
+
+        const hotPin = createStatPin('#e74c3c', 'H');  
+        const coldPin = createStatPin('#3498db', 'C'); 
+        const nullPin = createStatPin('#95a5a6', '-'); 
+
+        // ==========================================
+        // 3. LOAD MAP DATA
+        // ==========================================
+        async function fetchLiveReports() {
+            try {
+                const response = await fetch('http://127.0.0.1:8000/api/reports?t=' + new Date().getTime());
+                const data = await response.json();
+                
+                markersLayer.clearLayers();
+                if(heatLayer) map.removeLayer(heatLayer); 
+                
+                let heatCoordinates = [];
+                const showPhotos = document.getElementById('toggle-photos').checked;
+
+                data.forEach((report, index) => {
+                    const lat = parseFloat(report.lat);
+                    const lng = parseFloat(report.lng);
+                    if (isNaN(lat) || isNaN(lng)) return;
+
+                    heatCoordinates.push([lat, lng, 1.0]);
+
+                    let iconToUse;
+
+                    if (showPhotos && report.image_url && report.image_url !== "[null]") {
+                        const shadowColor = report.severity === 'CRITICAL' ? 'rgba(231, 76, 60, 0.8)' : 'rgba(0, 0, 0, 0.4)';
+                        const displayNum = index + 1;
+
+                        iconToUse = L.divIcon({
+                            className: 'custom-photo-pin',
+                            html: `
+                            <div style="position: relative; width: 75px; height: 75px; filter: drop-shadow(0px 8px 12px ${shadowColor}); transition: transform 0.2s;">
+                                <div style="width: 100%; height: 100%; background: white; border-radius: 18px; padding: 3px; box-sizing: border-box; position: relative; z-index: 2;">
+                                    <div style="width: 100%; height: 100%; border-radius: 14px; overflow: hidden; position: relative;">
+                                        <img src="http://127.0.0.1:8000${report.image_url}" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                                        <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: 50%; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);"></div>
+                                        <div style="position: absolute; bottom: 4px; left: 8px; color: white; font-family: -apple-system, sans-serif; font-size: 15px; font-weight: bold;">${displayNum}</div>
+                                    </div>
+                                </div>
+                                <div style="position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 12px solid white; z-index: 1;"></div>
+                            </div>`,
+                            iconSize: [75, 87], iconAnchor: [37.5, 87], popupAnchor: [0, -87] 
+                        });
+                    } else {
+                        iconToUse = report.severity === "CRITICAL" ? redIcon : blueIcon;
+                    }
+
+                    const marker = L.marker([lat, lng], { icon: iconToUse }).addTo(markersLayer);
+
+                    const isCritical = report.severity === "CRITICAL";
+                    let popupHtml = `
+                        <div class="popup-custom-header ${isCritical ? 'critical' : ''}">
+                            ${isCritical ? '🚨 CRITICAL: ' : '⚠️ '}${report.type}
+                        </div>
+                        <div class="popup-custom-body">
+                            <div style="color: #444; font-size: 13px; line-height: 1.4;">${report.desc}</div>
+                    `;
+                    
+                    if (report.image_url && report.image_url !== "[null]") {
+                        popupHtml += `<img src="http://127.0.0.1:8000${report.image_url}" class="popup-custom-img">`;
+                    }
+                    popupHtml += `</div>`;
+                    
+                    marker.bindPopup(popupHtml);
+                });
+
+                if (heatCoordinates.length > 0) {
+                    heatLayer = L.heatLayer(heatCoordinates, { 
+                        radius: 35, blur: 25, maxZoom: 12, minOpacity: 0.5, gradient: {0.4: 'blue', 0.6: 'lime', 0.8: 'orange', 1.0: 'red'} 
+                    }).addTo(map);
+                }
+
+            } catch (error) {
+                console.error("Database connection failed:", error);
+            }
+        }
+        
+        fetchLiveReports();
+        document.getElementById('toggle-photos').addEventListener('change', fetchLiveReports);
+
+        // ==========================================
+        // 4. MAP CLICK & LOCATION LOGIC
+        // ==========================================
+        map.on('click', (e) => {
+            selectedLat = e.latlng.lat;
+            selectedLng = e.latlng.lng;
+            
+            if(tempMarker) map.removeLayer(tempMarker);
+            tempMarker = L.marker([selectedLat, selectedLng], {icon: goldIcon}).addTo(map);
+            document.getElementById('coord-box').innerHTML = `Lat: <b>${selectedLat.toFixed(4)}</b>, Lng: <b>${selectedLng.toFixed(4)}</b>`;
+        });
+
+        document.getElementById('locate-btn').addEventListener('click', () => {
+            if (!navigator.geolocation) { alert("❌ Geolocation is not supported by your browser."); return; }
+
+            const locateBtn = document.getElementById('locate-btn');
+            const originalText = locateBtn.innerHTML;
+            locateBtn.innerHTML = "⏳ Locating...";
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    selectedLat = position.coords.latitude;
+                    selectedLng = position.coords.longitude;
+                    
+                    map.flyTo([selectedLat, selectedLng], 14);
+
+                    if(tempMarker) map.removeLayer(tempMarker);
+                    tempMarker = L.marker([selectedLat, selectedLng], {icon: goldIcon}).addTo(map);
+                    document.getElementById('coord-box').innerHTML = `Lat: <b>${selectedLat.toFixed(4)}</b>, Lng: <b>${selectedLng.toFixed(4)}</b>`;
+                    
+                    locateBtn.innerHTML = originalText;
+                },
+                (error) => {
+                    alert("❌ Unable to retrieve your location. Please check your browser permissions.");
+                    locateBtn.innerHTML = originalText;
+                }
+            );
+        });
+
+        // ==========================================
+        // 5. SUBMIT REPORT LOGIC
+        // ==========================================
+        document.getElementById('submit-btn').addEventListener('click', async () => {
+            const typeVal = document.getElementById('threat-type').value;
+            const descVal = document.getElementById('description').value;
+
+            if (!selectedLat || !selectedLng) { alert("🚨 STOP! You must click on the map or use your location first!"); return; }
+            if (!typeVal) { alert("🚨 STOP! Please select a Threat Type from the dropdown!"); return; }
+            if (!descVal.trim()) { alert("🚨 STOP! Please type a description of the threat!"); return; }
+
+            document.getElementById('submit-btn').innerHTML = "⏳ Sending..."; 
+            
+            const formData = new FormData();
+            formData.append("type", typeVal);
+            formData.append("description", descVal);
+            formData.append("lat", selectedLat);
+            formData.append("lng", selectedLng);
+
+            const imageInput = document.getElementById('report-image');
+            if (imageInput.files.length > 0) { formData.append("file", imageInput.files[0]); }
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/api/reports', { method: 'POST', body: formData });
+                
+                if(response.ok) {
+                    alert("✅ SUCCESS! Report saved to Database."); 
+                    document.getElementById('threat-form').reset();
+                    document.getElementById('coord-box').innerHTML = `Lat: --.---- , Lng: --.----`;
+                    selectedLat = null; selectedLng = null;
+                    if(tempMarker) map.removeLayer(tempMarker);
+                    fetchLiveReports(); 
+                } else {
+                    const errorData = await response.json();
+                    alert("❌ Backend Error: " + (errorData.detail || "Database rejected it."));
+                }
+            } catch (error) { 
+                alert("❌ Connection lost! Is main.py running?"); 
+            } finally {
+                document.getElementById('submit-btn').innerHTML = "Submit Report"; 
+            }
+        });
+
+        // ==========================================
+        // 6. SPATIAL ANALYSIS LOGIC
+        // ==========================================
+        const hotspotBtn = document.getElementById('hotspot-btn');
+        const resetMapBtn = document.getElementById('reset-map-btn');
+
+        hotspotBtn.addEventListener('click', async () => {
+            hotspotBtn.innerHTML = "⏳ Calculating...";
+            document.getElementById('toggle-photos').checked = false;
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/api/hotspots');
+                const result = await response.json();
+                
+                if (result.status === "error") { alert("⚠️ " + result.message); hotspotBtn.innerHTML = "🔥 Run Analysis"; return; }
+
+                markersLayer.clearLayers(); 
+                if(heatLayer) map.removeLayer(heatLayer); 
+                
+                result.data.forEach(report => {
+                    let iconToUse = nullPin;
+                    let clusterText = "<b style='color: gray;'>Not Significant Cluster</b>";
+                    
+                    if (report.cluster_type === "HOTSPOT") { iconToUse = hotPin; clusterText = "<b style='color: red;'>🔥 95% Confidence Hotspot</b>"; } 
+                    else if (report.cluster_type === "COLDSPOT") { iconToUse = coldPin; clusterText = "<b style='color: blue;'>❄️ 95% Confidence Coldspot</b>"; }
+
+                    const popupHtml = `
+                        <div class="popup-custom-header" style="background:#2E7D32;">Spatial Intelligence Data</div>
+                        <div class="popup-custom-body" style="text-align: center;">${clusterText}<br><hr><b>${report.type}</b><br>Z-Score: <b>${report.z_score}</b></div>`;
+
+                    L.marker([report.lat, report.lng], {icon: iconToUse}).bindPopup(popupHtml).addTo(markersLayer);
+                });
+
+                alert("✅ Getis-Ord Gi* Analysis Complete!");
+            } catch (error) {
+                alert("❌ Failed to run spatial analysis. Is main.py running?");
+            }
+            hotspotBtn.innerHTML = "🔥 Run Getis-Ord Gi* Analysis";
+        });
+
+        resetMapBtn.addEventListener('click', () => { document.getElementById('toggle-photos').checked = true; fetchLiveReports(); });
+   </script>
+</body>
+</html>
+< </section>
+
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2025 ForestConnect Project. Created for Educational Purposes.</p>
+            
+            <p>
+                <a href="sources.html" class="footer-link">Data Sources & Credits</a>
+                <span class="separator"></span>
+                
+            </p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+
+</body>
+</html>

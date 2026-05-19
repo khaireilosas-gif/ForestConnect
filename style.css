@@ -1,0 +1,323 @@
+/* =========================================
+   1. CSS VARIABLES (DEFAULT: LIGHT MODE)
+   ========================================= */
+@font-face {
+    font-family: 'Montserrat'; 
+    src: url('fonts/Montserrat-VariableFont_wght.ttf') format('truetype');
+    font-weight: 100 900; 
+    font-style: normal;
+}
+
+:root {
+    /* --- LIGHT MODE COLORS --- */
+    --bg-color: #f4f7f6;       
+    --text-color: #333333;     
+    --card-bg: #ffffff;        
+    --heading-color: #2c3e50;  
+    --border-color: #dddddd;   
+    
+    --nav-bg: #163A2b; /* Deep Forest Green */        
+    --primary-color: #2ecc71;  
+    --shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* =========================================
+   2. DARK MODE OVERRIDES
+   ========================================= */
+body.dark-mode {
+    --bg-color: #121212 !important;
+    --text-color: #b0b0b0 !important;
+    --card-bg: #1e1e1e !important;
+    --heading-color: #ffffff !important;
+    --border-color: #333333 !important;
+    --shadow: 0 5px 15px rgba(0,0,0,0.5) !important;
+    --nav-bg: #163A2b !important; 
+    background-color: #121212 !important;
+    color: #b0b0b0 !important;
+}
+
+body.dark-mode .navbar { border-bottom: 1px solid #225c45; }
+body.dark-mode h1, body.dark-mode h2, body.dark-mode h3 { color: #ffffff !important; }
+body.dark-mode .card, body.dark-mode .dashboard-wrapper, body.dark-mode .split-layout { background-color: #1e1e1e !important; border-color: #333333 !important; }
+
+/* Tactical Dark Mode Map Filter */
+body.dark-mode .leaflet-tile-pane {
+    filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+}
+
+/* =========================================
+   3. GLOBAL STYLES
+   ========================================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    overflow-x: hidden;
+}
+
+h1, h2, h3, h4 { color: var(--heading-color); }
+
+/* =========================================
+   4. NAVIGATION BAR
+   ========================================= */
+.navbar {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    padding: 20px 50px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--nav-bg);
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    transition: top 0.4s ease-in-out, background-color 0.3s;
+}
+
+.navbar h1 { margin: 0; font-size: 32px; color: white; }
+.logo img { height: 80px; }
+
+.nav-links { list-style: none; display: flex; align-items: center; gap: 20px; }
+.nav-links a { text-decoration: none; color: #fff; font-weight: bold; transition: 0.3s; }
+.nav-links a:hover, .nav-links a.active { color: var(--primary-color); }
+
+.theme-btn {
+    background: transparent; border: 1px solid #fff; color: #fff; 
+    padding: 6px 12px; border-radius: 20px; cursor: pointer;
+    font-size: 14px; transition: 0.3s; font-weight: bold;
+}
+.theme-btn:hover { background: #fff; color: #111; }
+
+.menu-icon { display: none; font-size: 2rem; cursor: pointer; color: #fff; }
+
+/* =========================================
+   5. DASHBOARD & SIDEBAR LAYOUT
+   ========================================= */
+.dashboard-wrapper { 
+    display: flex; 
+    width: 85%; 
+    max-width: 1400px; 
+    height: 75vh; 
+    margin: 40px auto 60px auto; 
+    border-radius: 16px; 
+    overflow: hidden; 
+    box-shadow: var(--shadow); 
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+}
+
+#sidebar { 
+    width: 350px; background: var(--card-bg); padding: 25px; 
+    z-index: 10; overflow-y: auto; display: flex; flex-direction: column;
+    border-right: 1px solid var(--border-color);
+}
+
+#sidebar h2 { color: #2e7d32; margin-top: 0; border-bottom: 2px solid var(--border-color); padding-bottom: 10px; font-size: 22px; }
+#sidebar label { font-weight: bold; font-size: 13px; margin-top: 15px; display: block; color: var(--text-color); }
+#sidebar select, #sidebar textarea, #sidebar input[type="file"] { 
+    width: 100%; padding: 10px; margin-top: 5px; border: 1px solid var(--border-color); 
+    border-radius: 6px; font-family: inherit; background: var(--bg-color); color: var(--text-color);
+}
+
+.coord-box { 
+    background: var(--bg-color); padding: 10px; border-radius: 6px; 
+    font-family: monospace; text-align: center; color: #2ecc71; 
+    margin-bottom: 20px; border: 1px dashed #2ecc71; 
+}
+
+#sidebar button { 
+    width: 100%; padding: 15px; margin-top: 25px; background: #1976D2; color: white; 
+    border: none; border-radius: 6px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.3s;
+}
+#sidebar button:hover { filter: brightness(0.9); }
+#locate-btn { background: #27ae60 !important; margin-top: 5px !important; margin-bottom: 15px !important; padding: 10px !important; }
+
+.layer-toggle { 
+    display: flex; align-items: center; cursor: pointer; font-size: 14px; 
+    font-weight: bold; color: var(--text-color); margin-top: 10px; padding: 10px; 
+    background: var(--bg-color); border-radius: 8px; border: 1px solid var(--border-color); 
+}
+.layer-toggle input { width: 18px; height: 18px; margin-right: 10px; cursor: pointer; }
+
+/* =========================================
+   6. MAP & LEAFLET OVERRIDES
+   ========================================= */
+#map-container { flex-grow: 1; position: relative; }
+#map { width: 100%; height: 100%; z-index: 1; }
+
+.instructions { 
+    position: absolute; top: 15px; right: 15px; background: var(--card-bg); 
+    padding: 8px 15px; border-radius: 20px; box-shadow: var(--shadow); 
+    z-index: 400; /* 🚨 LOWERED FROM 1000 so the mobile menu covers it safely */
+    font-weight: bold; font-size: 13px; color: #2e7d32; pointer-events: none; 
+}
+
+/* Also ensure your Navbar is always the highest element on the page */
+.navbar { z-index: 9999; }
+
+.custom-svg-pin, .custom-photo-pin { background: transparent !important; border: none !important; box-shadow: none !important; }
+
+.leaflet-popup-content-wrapper { background: var(--card-bg); color: var(--text-color); border-radius: 16px; padding: 0; overflow: hidden; box-shadow: var(--shadow); }
+.leaflet-popup-content { margin: 0; width: 280px !important; font-family: inherit; }
+.leaflet-popup-tip { background: var(--card-bg); }
+
+.popup-custom-header { background: #1b5e20; color: white; padding: 12px; font-weight: bold; }
+.popup-custom-header.critical { background: #e74c3c; }
+.popup-custom-body { padding: 15px; }
+.popup-custom-img { width: 100%; height: 160px; object-fit: cover; border-radius: 8px; margin-top: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+.leaflet-popup-close-button { color: white !important; top: 10px !important; right: 10px !important; font-weight: bold; }
+
+/* =========================================
+   7. MAIN WEBSITE / LANDING PAGE SECTIONS
+   ========================================= */
+.hero { width: 100%; height: 100vh; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.back-video { position: absolute; right: 0; bottom: 0; z-index: -1; min-width: 100%; min-height: 100%; object-fit: cover; }
+.overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.4); z-index: 0; }
+.hero-content { text-align: center; z-index: 1; color: #fff; padding: 0 20px; }
+.hero-content h1 { color: #fff; font-size: 60px; margin-bottom: 20px; }
+.hero-content p { color: #fff; font-size: 24px; margin-bottom: 30px; }
+
+.btn { display: inline-block; padding: 10px 30px; background: #2ecc71; color: #fff; border-radius: 5px; text-decoration: none; font-weight: bold; }
+
+.container { padding: 80px 10%; }
+.split-layout { display: flex; align-items: stretch; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); margin-bottom: 40px; height: 300px; }
+.text-box { flex: 1; padding: 35px; display: flex; flex-direction: column; justify-content: center; }
+.image-box { flex: 1; position: relative; height: 100%; overflow: hidden; }
+
+.card-video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; transform: scale(1.6); transform-origin: center center; display: block; opacity: 1; }
+body.dark-mode .card-video { opacity: 0.8; } 
+
+.content-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; margin-top: 40px; }
+.card { background: var(--card-bg); padding: 20px; border-radius: 10px; box-shadow: var(--shadow); border: 1px solid var(--border-color); }
+.interactive-link { text-decoration: none; color: inherit; position: relative; display: inline-block; cursor: pointer; }
+.interactive-link:hover { color: var(--primary-color); }
+
+footer { text-align: center; padding: 20px; background: #111; color: #fff; }
+
+/* =========================================
+   8. MOBILE RESPONSIVENESS (NATIVE APP FEEL)
+   ========================================= */
+@media (max-width: 768px) {
+    /* Prevent the main body from scrolling so the map acts like an app */
+    body { overflow: hidden !important; }
+
+    /* Navbar Shrink */
+    .navbar { padding: 12px 20px; z-index: 9999; }
+    .navbar h1 { font-size: 20px; }
+    .logo img { height: 40px; }
+    .menu-icon { display: block !important; z-index: 10000; }
+
+    /* Mobile Menu Dropdown */
+    .nav-links {
+        display: none; flex-direction: column; position: absolute; top: 100%; left: 0; 
+        width: 100%; padding: 20px 0; text-align: center; z-index: 9999;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.5); background-color: var(--card-bg);
+    }
+    .nav-links a { color: var(--text-color); font-size: 18px; }
+    body.dark-mode .nav-links { background-color: var(--nav-bg); } 
+    body.dark-mode .nav-links a { color: #fff; }
+    .nav-links.active { display: flex; }
+    .nav-links li { margin: 15px 0; }
+
+    /* 🚨 HIDE HERO VIDEO ON MOBILE FOR MAX MAP SPACE 🚨 */
+    .report-hero { display: none !important; }
+
+    /* 🚨 TRUE FULLSCREEN DASHBOARD 🚨 */
+    .dashboard-wrapper { 
+        position: absolute;
+        top: 60px; /* Sits exactly under navbar */
+        left: 0;
+        width: 100%; 
+        height: calc(100vh - 60px); 
+        margin: 0; 
+        border-radius: 0; 
+        border: none;
+        flex-direction: column;
+        box-shadow: none;
+        background: transparent;
+    }
+    
+    /* Map becomes the absolute background */
+    #map-container { 
+        position: absolute;
+        top: 0; left: 0;
+        height: 100%; 
+        width: 100%; 
+        z-index: 1;
+        border: none;
+    }
+
+    /* Floating Centered Pill Instructions */
+    .instructions {
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        right: auto;
+        border-radius: 30px;
+        padding: 10px 20px;
+        font-size: 14px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        z-index: 10;
+        white-space: nowrap; /* Prevents text wrapping */
+    }
+    
+    /* 🚨 THE BOTTOM SHEET DESIGN 🚨 */
+    #sidebar { 
+        position: absolute;
+        bottom: 0; left: 0;
+        width: 100%; 
+        height: 45vh; /* Takes up bottom 45% of the screen */
+        border-right: none; 
+        padding: 20px 20px 40px 20px; 
+        background: var(--card-bg);
+        z-index: 100;
+        border-radius: 24px 24px 0 0; /* iOS style rounded top corners */
+        box-shadow: 0 -5px 20px rgba(0,0,0,0.2); /* Shadow pointing upwards */
+        border-top: 1px solid var(--border-color);
+    }
+
+    /* The tiny drag-handle line at the top of the sheet */
+    #sidebar::before {
+        content: '';
+        display: block;
+        width: 40px;
+        height: 5px;
+        background: #ccc;
+        border-radius: 5px;
+        margin: 0 auto 20px auto;
+    }
+
+    /* Tweak text sizes inside the bottom sheet */
+    #sidebar h2 { font-size: 18px; text-align: center; border: none; margin-bottom: 5px; padding: 0; }
+    #sidebar > p { text-align: center; margin-bottom: 15px; }
+
+    /* Hide non-essential layout classes on mobile to save memory */
+    .split-layout, .container, .hero { display: none; }
+}
+/* =========================================
+   9. FOOTER
+   ========================================= */
+footer {
+    background-color: var(--nav-bg); /* Uses your Deep Forest Green! */
+    color: #ecf0f1;
+    text-align: center; 
+    padding: 30px 20px; 
+    margin-top: auto;
+    width: 100%;
+    z-index: 10;
+    position: relative;
+}
+footer p { margin: 5px 0; font-size: 0.9rem; color: #ccc; }
+.footer-link { color: var(--primary-color); text-decoration: none; font-weight: bold; transition: 0.3s; }
+.footer-link:hover { color: #fff; }
+.separator { margin: 0 10px; color: #7f8c8d; }
+
+/* Dark mode compatibility */
+body.dark-mode footer { border-top: 1px solid #333; }

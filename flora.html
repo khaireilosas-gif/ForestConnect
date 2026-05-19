@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ForestConnect - Flora</title>
+    <link rel="stylesheet" href="style.css">
+    
+    <style>
+        /* --- Specific styles for the dashboard container --- */
+        .map-container iframe {
+            width: 100%;
+            height: 600px;
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        /* --- Footer Styles (Ensuring consistency across pages) --- */
+        footer {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            text-align: center;
+            padding: 25px 0;
+            margin-top: auto;
+        }
+
+        footer p {
+            margin: 5px 0;
+            font-size: 0.9rem;
+        }
+
+        .footer-link {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.2s;
+        }
+
+        .footer-link:hover {
+            color: #5dade2;
+            text-decoration: underline;
+        }
+
+        .separator {
+            margin: 0 10px;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+
+   <nav class="navbar">
+    <div class="logo">
+        <img src="logo.png" alt="ForestConnect Logo">
+    </div>
+    
+    <div class="menu-icon" id="menu-icon">☰</div>
+
+    <ul class="nav-links" id="nav-links">
+      <li><a href="index.html">Home</a></li>
+        <li><a href="forest-reserve.html">Forest Reserve</a></li>
+         <li><a href="heritage.html" >Heritage</a></li>
+        <li><a href="tourism.html">Tourism</a></li>
+        <li><a href="deforestation.html">Deforestation</a></li>
+        <li><a href="animals.html">Fauna </a></li>
+        <li><a href="flora.html">Flora</a></li>
+        <li><a href="reports2.html" style="color: #e67e22; font-weight: bold;">Report</a></li>
+        <li><a href="hotline.html" style="color: #e74c3c; font-weight: bold;">Hotline</a></li>
+         <li><a href="forest-ai.html" style="color: #0077b6; font-weight: bold;">Forest AI</a></li>
+        <li><button id="theme-toggle" class="theme-btn">🌙 Dark</button></li>
+    </ul>
+</nav>
+
+    <section class="hero" style="min-height: 50vh;">
+        <video autoplay muted loop playsinline class="back-video">
+            <source src="forest.mp4" type="video/mp4">
+        </video>
+        <div class="overlay"></div>
+        <div class="hero-content">
+            <h1>The Green Giants</h1>
+            <p>Explore the ancient plant life that sustains the rainforest ecosystem.</p>
+        </div>
+    </section>
+
+    <section class="container">
+        <h2>Unique Flora of Malaysia</h2>
+        <p class="section-intro">Our rainforests are home to over 15,000 species of vascular plants, including the world's largest flower.</p>
+        
+        <div class="content-grid">
+            
+            <div class="card">
+                <img src="giantferns.jpg" alt="Giant Ferns" style="width:100%; height: 250px; object-fit: cover; border-radius: 8px; margin-bottom: 15px;">
+                <h3>Giant Ferns</h3>
+                <p>Ancient plants that have existed since the time of the dinosaurs. They cover the damp forest floor and help retain soil moisture.</p>
+            </div>
+
+            <div class="card">
+                <img src="bamboo.jpg" alt="Bamboo" style="width:100%; height: 250px; object-fit: cover; border-radius: 8px; margin-bottom: 15px;">
+                <h3>Bamboo (Buluh)</h3>
+                <p>Fast-growing and versatile, wild bamboo clusters are common in secondary forests, preventing soil erosion and providing food for wildlife.</p>
+            </div>
+
+            <div class="card">
+                <img src="dipterocarp.jpg" alt="Dipterocarp Trees" style="width:100%; height: 250px; object-fit: cover; border-radius: 8px; margin-bottom: 15px;">
+                <h3>Dipterocarp Trees</h3>
+                <p>The giants of the forest. These massive trees form the canopy layer, reaching heights of over 60 meters and providing homes for birds and monkeys.</p>
+            </div>
+
+            <div class="card">
+                <img src="periukera.jpg" alt="Nepenthes (Pitcher Plant)" style="width:100%; height: 250px; object-fit: cover; border-radius: 8px; margin-bottom: 15px;">
+                <h3>Nepenthes (Pitcher Plant)</h3>
+                <p>These carnivorous plants trap insects in their fluid-filled cups. Malaysia is home to over 30 different species of Nepenthes.</p>
+            </div>
+
+            <div class="card">
+                <img src="wildorchid.jpg" alt="Wild Orchids" style="width:100%; height: 250px; object-fit: cover; border-radius: 8px; margin-bottom: 15px;">
+                <h3>Wild Orchids</h3>
+                <p>With thousands of species, wild orchids add vibrant color to the green forest. Many grow as epiphytes on the branches of taller trees.</p>
+            </div>
+
+            <div class="card">
+                <img src="bungakantan.jpg" alt="Torch Ginger" style="width:100%; height: 250px; object-fit: cover; border-radius: 8px; margin-bottom: 15px;">
+                <h3>Torch Ginger (Bunga Kantan)</h3>
+                <p>A stunning pink flower often used in local cuisine. In the wild, it grows in large, vibrant clumps near riverbanks.</p>
+            </div>
+            
+            <div class="card">
+                <img src="refflesia.jpg" alt="Rafflesia" style="width:100%; height: 250px; object-fit: cover; border-radius: 8px; margin-bottom: 15px;">
+                <h3>Rafflesia</h3>
+                <p>Known as the "Corpse Flower," the Rafflesia arnoldii produces the largest single flower on Earth. It has no leaves, stems, or roots.</p>
+            </div>
+
+            <div class="card">
+                <img src="hibiscus.jpg" alt="Hibiscus (Bunga Raya)" style="width:100%; height: 250px; object-fit: cover; border-radius: 8px; margin-bottom: 15px;">
+                <h3>Hibiscus (Bunga Raya)</h3>
+                <p>Malaysia's national flower. While common in gardens, wild varieties can be found in the forest fringes, symbolizing courage and vitality.</p>
+            </div>
+
+        </div>
+    </section>
+
+    <section class="container">
+        <h2>Flora Distribution Dashboard</h2>
+        <p class="section-intro">Visual data on the density and distribution of key plant species across the region.</p>
+        <div class="map-container">
+            <iframe src="https://www.arcgis.com/apps/dashboards/0681eb091d71408ab22bb3cf64ef822a" title="Flora Dashboard"></iframe>
+        </div>
+    </section>
+
+    <section class="bg-dark">
+        <div class="container">
+            <h2>Why Flora Matters</h2>
+            <div class="text-box" style="text-align: center; max-width: 800px; margin: 0 auto;">
+                <p>Plants are the producers of the forest. They generate oxygen, store carbon, maintain the water cycle, and provide food for every animal species.</p>
+                <br>
+                <a href="index.html" class="btn">Back to Home</a>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2025 ForestGuard Project. Created for Educational Purposes.</p>
+            
+            <p>
+                <a href="sources.html" class="footer-link">Data Sources & Credits</a>
+                <span class="separator">|</span>
+                <a href="#" class="footer-link">Privacy Policy</a>
+            </p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

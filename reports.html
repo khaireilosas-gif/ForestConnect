@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ForestConnect - Report Threat</title>
+    
+    <link rel="stylesheet" href="style.css">
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <style>
+        /* --- FORM STYLES --- */
+        .form-container {
+            max-width: 700px;
+            margin: -50px auto 50px;
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 10;
+        }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: bold; color: #333; }
+        
+        .form-group input, 
+        .form-group select, 
+        .form-group textarea {
+            width: 100%; padding: 12px;
+            border: 1px solid #ddd; border-radius: 6px;
+            font-size: 1rem; font-family: inherit;
+            box-sizing: border-box; 
+        }
+
+        .form-group textarea { resize: vertical; height: 120px; }
+
+        .file-input-wrapper {
+            border: 2px dashed #2ecc71; padding: 30px;
+            text-align: center; border-radius: 6px;
+            cursor: pointer; background-color: #f9fdfa;
+            transition: background 0.3s;
+        }
+        .file-input-wrapper:hover { background: #eafaf1; }
+
+        .btn-submit {
+            background: #e67e22; color: white;
+            padding: 15px 20px; border: none; border-radius: 6px;
+            cursor: pointer; font-size: 1.1rem; width: 100%;
+            font-weight: bold;
+        }
+        .btn-submit:hover { background: #d35400; }
+        .btn-submit:disabled { background: #95a5a6; cursor: not-allowed; }
+
+        /* --- MAP STYLING --- */
+        #report-map {
+            height: 400px; width: 100%;
+            border-radius: 6px; border: 2px solid #eee;
+            z-index: 1; margin-top: 5px;
+            cursor: crosshair;
+        }
+
+        #statusMessage {
+            margin-top: 20px; padding: 15px; border-radius: 6px;
+            display: none; text-align: center; font-weight: bold;
+        }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        /* --- DARK MODE OVERRIDES --- */
+        body.dark-mode .form-container {
+            background-color: #2d2d2d; border: 1px solid #444; color: #f4f4f4;
+        }
+        body.dark-mode .form-group label { color: #ccc; }
+        body.dark-mode input, body.dark-mode select, body.dark-mode textarea {
+            background-color: #444; color: white; border-color: #666;
+        }
+        body.dark-mode .file-input-wrapper {
+            background-color: #333; border-color: #555;
+        }
+        body.dark-mode .file-input-wrapper:hover { background-color: #444; }
+        body.dark-mode #report-map { border-color: #555; }
+
+        /* --- FOOTER --- */
+        footer {
+            background-color: #2c3e50; color: #ecf0f1;
+            text-align: center; padding: 25px 0; margin-top: auto;
+        }
+        footer p { margin: 5px 0; font-size: 0.9rem; }
+        .footer-link { color: #3498db; text-decoration: none; font-weight: bold; }
+        .separator { margin: 0 10px; color: #7f8c8d; }
+    </style>
+</head>
+<body>
+
+   <nav class="navbar">
+    <div class="logo">
+        <img src="logo.png" alt="ForestConnect Logo">
+    </div>
+    <div class="menu-icon" id="menu-icon">☰</div>
+    <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="forest-reserve.html">Forest Reserve</a></li>
+        <li><a href="tourism.html">Tourism</a></li>
+        <li><a href="deforestation.html">Deforestation</a></li>
+        <li><a href="animals.html">Fauna</a></li>
+        <li><a href="flora.html">Flora</a></li>
+        <li><a href="reports.html" class="active" style="color: #e67e22; font-weight: bold;">Report</a></li>
+        <li><a href="hotline.html" style="color: #e74c3c; font-weight: bold;">Hotline</a></li>
+        <li><button id="theme-toggle" class="theme-btn">🌙 Dark</button></li>
+    </ul>
+</nav>
+
+    <section class="hero" style="min-height: 50vh;">
+        <video autoplay muted loop playsinline class="back-video">
+            <source src="forest.mp4" type="video/mp4">
+        </video>
+        <div class="overlay"></div>
+        <div class="hero-content">
+            <h1>Submit an Incident Report</h1>
+            <p>Help us protect the forest. Pin the location and describe the threat.</p>
+        </div>
+    </section>
+
+    <section class="container">
+        <div class="form-container">
+            <h2 style="text-align: center; margin-bottom: 30px;">Incident Details</h2>
+            
+            <form id="threatForm">
+                
+                <div class="form-group">
+                    <label>Your Name (Optional)</label>
+                    <input type="text" id="reporterName" placeholder="Enter your name">
+                </div>
+
+                <div class="form-group">
+                    <label>Type of Threat</label>
+                    <select id="category" required>
+                        <option value="" disabled selected>Select a category...</option>
+                        <option value="Illegal Logging">Illegal Logging</option>
+                        <option value="Poaching">Poaching / Wildlife Trafficking</option>
+                        <option value="Forest Fire">Forest Fire / Open Burning</option>
+                        <option value="Water Pollution">River/Water Pollution</option>
+                        <option value="Injured Animal">Injured Wildlife</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Location (Pin on Map)</label>
+                    
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <input type="text" id="locationCoords" required readonly placeholder="Click map or use button" style="flex: 1; background-color: #f9f9f9; cursor: not-allowed; font-family: monospace;">
+                        <button type="button" id="locateBtn" style="background: #2ecc71; color: white; border: none; border-radius: 6px; padding: 0 20px; cursor: pointer; font-weight: bold; white-space: nowrap;">
+                            📍 Find Me
+                        </button>
+                    </div>
+
+                    <div id="report-map"></div>
+                    <p class="location-info">💡 <strong>Tip:</strong> Click the map to drop a pin. Drag the blue pin to adjust exact location.</p>
+                </div>
+
+                <div class="form-group">
+                    <label>Date of Observation</label>
+                    <input type="date" id="date" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Upload Evidence (Optional)</label>
+                    <div class="file-input-wrapper" onclick="document.getElementById('evidencePhoto').click()">
+                        <input type="file" id="evidencePhoto" accept="image/*" style="display: none;">
+                        <span style="font-size: 2rem;">📷</span>
+                        <p style="margin: 5px 0 0 0; font-weight: bold;">Click to Upload Photo</p>
+                        <p id="fileNameDisplay" style="font-size: 0.8rem; color: #888; margin-top: 5px;"></p>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="description" placeholder="Describe details (license plates, number of people, etc.)..." required></textarea>
+                </div>
+
+                <button type="submit" class="btn-submit">Submit Report</button>
+                <div id="statusMessage"></div>
+
+            </form>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2025 ForestGuard Project.</p>
+            <p><a href="#" class="footer-link">Privacy Policy</a></p>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="script.js"></script> 
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+
+            // ============================================
+            // 0. SHARED VARIABLES (The Fix)
+            // ============================================
+            // We define these HERE so both the Map Logic and Form Logic can see them.
+            let map = null;
+            let marker = null;
+            const locationInput = document.getElementById('locationCoords');
+            const locateBtn = document.getElementById('locateBtn');
+
+            // ============================================
+            // 1. PIN ICON FIX
+            // ============================================
+            delete L.Icon.Default.prototype._getIconUrl;
+            L.Icon.Default.mergeOptions({
+                iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+                iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+                shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+            });
+
+            // ============================================
+            // 2. MAP LOGIC
+            // ============================================
+            const mapElement = document.getElementById('report-map');
+            
+            if (mapElement) {
+                // Initialize Map
+                map = L.map('report-map').setView([4.2105, 101.9758], 6); // Malaysia
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap',
+                    maxZoom: 19
+                }).addTo(map);
+
+                // Helper Function to Move/Create Marker
+                function updateMarker(lat, lng) {
+                    locationInput.value = `${parseFloat(lat).toFixed(6)}, ${parseFloat(lng).toFixed(6)}`;
+
+                    if (marker) {
+                        marker.setLatLng([lat, lng]);
+                    } else {
+                        marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+                        
+                        marker.on('dragend', function(e) {
+                            const pos = marker.getLatLng();
+                            locationInput.value = `${pos.lat.toFixed(6)}, ${pos.lng.toFixed(6)}`;
+                            marker.bindPopup("Location Updated").openPopup();
+                        });
+                    }
+                    
+                    map.setView([lat, lng], 15);
+                    marker.bindPopup("<b>📍 Location Set</b><br>Drag to adjust.").openPopup();
+                }
+
+                // Click Event
+                map.on('click', function(e) {
+                    updateMarker(e.latlng.lat, e.latlng.lng);
+                });
+
+                // Button Event
+                locateBtn.addEventListener('click', function() {
+                    if (!navigator.geolocation) {
+                        alert("Geolocation not supported.");
+                        return;
+                    }
+                    locateBtn.innerText = "Locating...";
+                    locateBtn.disabled = true;
+
+                    navigator.geolocation.getCurrentPosition(
+                        (pos) => {
+                            updateMarker(pos.coords.latitude, pos.coords.longitude);
+                            locateBtn.innerText = "📍 Find Me";
+                            locateBtn.disabled = false;
+                        },
+                        (err) => {
+                            alert("Location Error: " + err.message);
+                            locateBtn.innerText = "📍 Find Me";
+                            locateBtn.disabled = false;
+                        },
+                        { enableHighAccuracy: true, timeout: 5000 }
+                    );
+                });
+            }
+
+            // ============================================
+            // 3. FORM & SUPABASE LOGIC
+            // ============================================
+            const SUPABASE_URL = "https://pmjmeilyqcnxpplrelwa.supabase.co"; 
+            const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtam1laWx5cWNueHBwbHJlbHdhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczNDUxNDIsImV4cCI6MjA4MjkyMTE0Mn0.pd_dNBOfRh-Mg6ULcyDujaT1WnfV5JM_rOz6XUQzaP4";
+
+            // File Input UI
+            const fileInput = document.getElementById('evidencePhoto');
+            if(fileInput) {
+                fileInput.addEventListener('change', function(){
+                    const nameDisplay = document.getElementById('fileNameDisplay');
+                    if(this.files && this.files.length > 0) nameDisplay.innerText = "Selected: " + this.files[0].name;
+                });
+            }
+
+            // Set Date
+            const dateInput = document.getElementById('date');
+            if(dateInput) dateInput.valueAsDate = new Date();
+
+            // Submit Logic
+            let supabase = null;
+            try { if (window.supabase) supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } 
+            catch (err) { console.error("Supabase Init Error:", err); }
+
+            const form = document.getElementById('threatForm');
+            if (form) {
+                form.addEventListener('submit', async function(e) {
+                    e.preventDefault(); 
+                    
+                    const submitBtn = document.querySelector('.btn-submit');
+                    const statusMsg = document.getElementById('statusMessage');
+
+                    if (!supabase) { alert("Database error: Check console."); return; }
+
+                    submitBtn.disabled = true;
+                    submitBtn.innerText = "Uploading...";
+                    statusMsg.style.display = 'none';
+
+                    try {
+                        let photoURL = null;
+                        const file = fileInput.files[0];
+
+                        // 1. Upload
+                        if (file) {
+                            const fileName = `${Date.now()}_${file.name.replace(/\s/g, '')}`;
+                            const { data, error: uploadError } = await supabase.storage.from('evidance').upload(fileName, file);
+                            if (uploadError) throw uploadError;
+                            
+                            const { data: urlData } = supabase.storage.from('evidance').getPublicUrl(fileName);
+                            photoURL = urlData.publicUrl;
+                        }
+
+                        // 2. Insert
+                        const { error: insertError } = await supabase.from('reports').insert([{
+                            name: document.getElementById('reporterName').value || "Anonymous",
+                            category: document.getElementById('category').value,
+                            location: document.getElementById('locationCoords').value,
+                            date: document.getElementById('date').value,
+                            description: document.getElementById('description').value,
+                            photo_url: photoURL
+                        }]);
+
+                        if (insertError) throw insertError;
+
+                        // 3. Success (Now safely uses shared variables)
+                        statusMsg.style.display = 'block';
+                        statusMsg.className = 'success';
+                        statusMsg.innerText = "Report submitted successfully!";
+                        form.reset();
+                        document.getElementById('fileNameDisplay').innerText = "";
+                        
+                        // Clear Map Marker (Safe now)
+                        if (marker && map) { 
+                            map.removeLayer(marker); 
+                            marker = null; 
+                        }
+                        
+                        // Clear Input (Safe now)
+                        if (locationInput) locationInput.value = ""; 
+
+                    } catch (error) {
+                        statusMsg.style.display = 'block';
+                        statusMsg.className = 'error';
+                        statusMsg.innerText = "Error: " + error.message;
+                    } finally {
+                        submitBtn.innerText = "Submit Report";
+                        submitBtn.disabled = false;
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

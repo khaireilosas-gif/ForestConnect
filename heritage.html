@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ForestConnect - Heritage & History</title>
+    
+    <!-- Link to your main website stylesheet -->
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        /* HERITAGE PAGE SPECIFIC STYLES */
+        
+        /* Hero Section for Heritage */
+        .hero-heritage {
+            background: linear-gradient(rgba(10, 31, 15, 0.7), rgba(10, 31, 15, 0.8)), url('https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?q=80&w=2572&auto=format&fit=crop') no-repeat center center/cover;
+            color: white;
+            text-align: center;
+            padding: 100px 20px 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hero-heritage h1 {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+        }
+
+        .hero-heritage p {
+            font-size: 1.2rem;
+            max-width: 800px;
+            line-height: 1.6;
+            color: #e8f5e9;
+        }
+
+        /* StoryMap Section */
+        .storymap-section {
+            padding: 60px 20px;
+            background-color: #f4f7f6;
+            text-align: center;
+        }
+
+        .storymap-section h2 {
+            color: #1b5e20;
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+
+        .storymap-section p {
+            max-width: 800px;
+            margin: 0 auto 40px;
+            color: #555;
+            line-height: 1.6;
+            font-size: 1.1rem;
+        }
+
+        /* Container to make the iframe look premium and responsive */
+        .iframe-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            background: #fff;
+            border: 1px solid #ddd;
+        }
+
+        .iframe-container iframe {
+            width: 100%;
+            height: 700px; /* Increased height for a better StoryMap experience */
+            display: block;
+            border: none;
+        }
+
+        /* Dark Mode Compatibility */
+        body.dark-mode .storymap-section {
+            background-color: #1a1a1a;
+        }
+        body.dark-mode .storymap-section h2 {
+            color: #2ecc71;
+        }
+        body.dark-mode .storymap-section p {
+            color: #ccc;
+        }
+        body.dark-mode .iframe-container {
+            border-color: #333;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Responsive iframe height for mobile */
+        @media (max-width: 768px) {
+            .iframe-container iframe {
+                height: 500px;
+            }
+            .hero-heritage h1 {
+                font-size: 2.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- MAIN WEBSITE NAVBAR -->
+    <nav class="navbar">
+        <div class="logo">
+            <img src="logo.png" alt="ForestConnect Logo">
+        </div>
+        
+        <div class="menu-icon" id="menu-icon">☰</div>
+
+        <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="forest-reserve.html">Forest Reserve</a></li>
+         <li><a href="heritage.html" >Heritage</a></li>
+        <li><a href="tourism.html">Tourism</a></li>
+        <li><a href="deforestation.html">Deforestation</a></li>
+        <li><a href="animals.html">Fauna </a></li>
+        <li><a href="flora.html">Flora</a></li>
+        <li><a href="reports2.html" style="color: #e67e22; font-weight: bold;">Report</a></li>
+        <li><a href="hotline.html" style="color: #e74c3c; font-weight: bold;">Hotline</a></li>
+         <li><a href="forest-ai.html" style="color: #0077b6; font-weight: bold;">Forest AI</a></li>
+        <li><button id="theme-toggle" class="theme-btn">🌙 Dark</button></li>
+        </ul>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <section class="hero-heritage">
+        <h1>Forest Heritage & Culture</h1>
+        <p>Discover the ancient stories, indigenous cultures, and historical milestones intertwined with our native rainforests. Our forests are more than just trees; they are living museums of human and natural history.</p>
+    </section>
+
+    <!-- ARCGIS STORYMAP SECTION -->
+    <section class="storymap-section">
+        <div class="container">
+            <h2>Interactive Heritage Map</h2>
+            <p>Navigate through the deep history of our forest reserves. Scroll through the interactive StoryMap below to uncover historical sites, ancient indigenous trails, and the legacy of forest conservation.</p>
+            
+            <div class="iframe-container">
+                <!-- User Provided ArcGIS StoryMap Iframe -->
+                <iframe 
+                    src="https://storymaps.arcgis.com/stories/8b94d03b398b4a7fac37a831005fbca0" 
+                    allowfullscreen 
+                    allow="geolocation">
+                </iframe>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+<footer>
+        <div class="footer-content">
+            <p>&copy; 2025 ForestConnect Project. Created for Educational Purposes.</p>
+            
+            <p>
+                <a href="sources.html" class="footer-link">Data Sources & Credits</a>
+                <span class="separator"></span>
+                
+            </p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
