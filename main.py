@@ -14,10 +14,10 @@ from google import genai
 # ==========================================
 # 1. CONFIGURATION & SETUP
 # ==========================================
-# ⚠️ Security Note: It is best practice to move keys to Render Environment Variables later!
-GEMINI_API_KEY = "AIzaSyCk5UNaroLMOXni_lRRVGPW10H9wL5Rxac" 
+# ⚠️ Security Note: Pulling API key from Render Environment Variables!
+import os
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 client = genai.Client(api_key=GEMINI_API_KEY)
-
 # Connected directly to Render Cloud Database with SSL!
 DATABASE_URL = "postgresql://forestconnect_db_user:b6uaz0jAo7TsUSuOdTEN6WVYhw80gdoE@dpg-d85thc0jo89c7380gd3g-a.singapore-postgres.render.com/forestconnect_db?sslmode=require"
 app = FastAPI()
