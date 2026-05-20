@@ -313,7 +313,12 @@
 
                 if (heatCoordinates.length > 0) {
                     heatLayer = L.heatLayer(heatCoordinates, { 
-                        radius: 35, blur: 25, maxZoom: 12, minOpacity: 0.5, gradient: {0.4: 'blue', 0.6: 'lime', 0.8: 'orange', 1.0: 'red'} 
+                        radius: 25,      /* Slightly smaller base radius */
+                        blur: 20,        /* Smoother edges */
+                        maxZoom: 18,     /* 🚨 THE FIX: Let the heatmap scale all the way in */
+                        max: 2.0,        /* 🚨 THE FIX: Requires multiple overlapping points to turn solid red */
+                        minOpacity: 0.4, 
+                        gradient: {0.4: 'blue', 0.6: 'lime', 0.8: 'orange', 1.0: 'red'} 
                     }).addTo(map);
                 }
 
