@@ -125,17 +125,17 @@
         </div>
         <div class="menu-icon" id="menu-icon">☰</div>
         <ul class="nav-links" id="nav-links">
-         <li><a href="index.html">Home</a></li>
-        <li><a href="forest-reserve.html">Forest Reserve</a></li>
-         <li><a href="heritage.html" >Heritage</a></li>
-        <li><a href="tourism.html">Tourism</a></li>
-        <li><a href="deforestation.html">Deforestation</a></li>
-        <li><a href="animals.html">Fauna </a></li>
-        <li><a href="flora.html">Flora</a></li>
-        <li><a href="reports2.html" style="color: #e67e22; font-weight: bold;">Report</a></li>
-        <li><a href="hotline.html" style="color: #e74c3c; font-weight: bold;">Hotline</a></li>
-         <li><a href="forest-ai.html" style="color: #0077b6; font-weight: bold;">Forest AI</a></li>
-        <li><button id="theme-toggle" class="theme-btn">🌙 Dark</button></li>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="forest-reserve.html">Forest Reserve</a></li>
+            <li><a href="heritage.html">Heritage</a></li>
+            <li><a href="tourism.html">Tourism</a></li>
+            <li><a href="deforestation.html">Deforestation</a></li>
+            <li><a href="animals.html">Fauna</a></li>
+            <li><a href="flora.html">Flora</a></li>
+            <li><a href="reports2.html" style="color: #e67e22; font-weight: bold;">Report</a></li>
+            <li><a href="hotline.html" style="color: #e74c3c; font-weight: bold;">Hotline</a></li>
+            <li><a href="forest-ai.html" style="color: #0077b6; font-weight: bold;">Forest AI</a></li>
+            <li><button id="theme-toggle" class="theme-btn">🌙 Dark</button></li>
         </ul>
     </nav>
 
@@ -188,8 +188,8 @@
 
             <div style="margin-top: 20px; border-top: 2px solid #e8f5e9; padding-top: 20px;">
                 <h3 style="color: #2E7D32; font-size: 16px; margin-top: 0;">Spatial Intelligence</h3>
-                <button type="button" id="hotspot-btn" style="background: #e67e22; margin-top: 5px;">🔥 Run Getis-Ord Gi* Analysis</button>
-                <button type="button" id="reset-map-btn" style="background: #7f8c8d; margin-top: 10px;">🔄 Reset to Normal Map</button>
+                <button type="button" id="reset-map-btn" style="background: #7f8c8d; margin-top: 5px;">🔄 Show Normal Map</button>
+                <button type="button" id="hotspot-btn" style="background: #e67e22; margin-top: 10px;">🔥 Show Hot Spot Analysis</button>
             </div>
         </div>
 
@@ -428,7 +428,7 @@
                 const response = await fetch('https://forestconnect-1.onrender.com/api/hotspots');
                 const result = await response.json();
                 
-                if (result.status === "error") { alert("⚠️ " + result.message); hotspotBtn.innerHTML = "🔥 Run Analysis"; return; }
+                if (result.status === "error") { alert("⚠️ " + result.message); hotspotBtn.innerHTML = "🔥 Show Hot Spot Analysis"; return; }
 
                 markersLayer.clearLayers(); 
                 if(heatLayer) map.removeLayer(heatLayer); 
@@ -447,11 +447,11 @@
                     L.marker([report.lat, report.lng], {icon: iconToUse}).bindPopup(popupHtml).addTo(markersLayer);
                 });
 
-                alert("✅ Getis-Ord Gi* Analysis Complete!");
+                alert("✅ Spatial Analysis Complete!");
             } catch (error) {
                 alert("❌ Failed to run spatial analysis. Is main.py running?");
             }
-            hotspotBtn.innerHTML = "🔥 Run Getis-Ord Gi* Analysis";
+            hotspotBtn.innerHTML = "🔥 Show Hot Spot Analysis";
         });
 
         resetMapBtn.addEventListener('click', () => { document.getElementById('toggle-photos').checked = true; fetchLiveReports(); });
@@ -462,7 +462,7 @@
             <p>&copy; 2026 ForestConnect Project. Created for Educational Purposes.</p>
             <p>
                 <a href="sources.html" class="footer-link">Data Sources & Credits</a>
-                <span class="separator"></span>
+                <span class="separator">|</span>
             </p>
         </div>
     </footer>

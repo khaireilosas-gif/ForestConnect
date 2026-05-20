@@ -76,7 +76,7 @@ h1, h2, h3, h4 { color: var(--heading-color); }
     justify-content: space-between;
     align-items: center;
     background: var(--nav-bg);
-    z-index: 1000;
+    z-index: 10000;
     box-shadow: 0 2px 10px rgba(0,0,0,0.3);
     transition: top 0.4s ease-in-out, background-color 0.3s;
 }
@@ -105,7 +105,7 @@ h1, h2, h3, h4 { color: var(--heading-color); }
     width: 85%; 
     max-width: 1400px; 
     height: 75vh; 
-    margin: 40px auto 60px auto; 
+    margin: 120px auto 60px auto; 
     border-radius: 16px; 
     overflow: hidden; 
     box-shadow: var(--shadow); 
@@ -159,8 +159,6 @@ h1, h2, h3, h4 { color: var(--heading-color); }
     font-weight: bold; font-size: 13px; color: #2e7d32; pointer-events: none; 
 }
 
-.navbar { z-index: 9999; }
-
 .custom-svg-pin, .custom-photo-pin { background: transparent !important; border: none !important; box-shadow: none !important; }
 
 .leaflet-popup-content-wrapper { background: var(--card-bg); color: var(--text-color); border-radius: 16px; padding: 0; overflow: hidden; box-shadow: var(--shadow); }
@@ -198,24 +196,22 @@ body.dark-mode .card-video { opacity: 0.8; }
 .interactive-link { text-decoration: none; color: inherit; position: relative; display: inline-block; cursor: pointer; }
 .interactive-link:hover { color: var(--primary-color); }
 
-
 /* =========================================
    8. MOBILE RESPONSIVENESS (NATIVE APP FEEL)
    ========================================= */
 @media (max-width: 768px) {
     /* Navbar Shrink */
-    .navbar { padding: 12px 20px; z-index: 9999; }
+    .navbar { padding: 12px 20px; }
     .navbar h1 { font-size: 20px; }
     .logo img { height: 40px; }
-    .menu-icon { display: block !important; z-index: 10000; }
+    .menu-icon { display: block !important; }
 
     /* Mobile Menu Dropdown */
     .nav-links {
         display: none; flex-direction: column; position: absolute; top: 100%; left: 0; 
-        width: 100%; padding: 20px 0; text-align: center; z-index: 9999;
+        width: 100%; padding: 20px 0; text-align: center; 
         box-shadow: 0 5px 15px rgba(0,0,0,0.5); background-color: var(--card-bg);
-        max-height: 75vh; /* Prevents menu from pushing past screen bottom */
-        overflow-y: auto; /* Allows menu to scroll if there are many links */
+        max-height: 75vh; overflow-y: auto;
     }
     .nav-links a { color: var(--text-color); font-size: 18px; }
     body.dark-mode .nav-links { background-color: var(--nav-bg); } 
@@ -223,33 +219,35 @@ body.dark-mode .card-video { opacity: 0.8; }
     .nav-links.active { display: flex; }
     .nav-links li { margin: 15px 0; }
 
-    /* 🚨 FIX: Standard Pages (Data Sources, etc.) 🚨 */
-    .container {
-        padding: 100px 5% 40px 5% !important; /* Pushes content down so navbar doesn't cover it */
-        display: block !important; /* Brings your missing text back */
-    }
+    /* General Layout Fixes */
+    .container { padding: 100px 5% 40px 5% !important; display: block !important; }
+    
+    /* 🚨 REPAIRED: Stack content on mobile instead of deleting it! 🚨 */
+    .hero { height: auto; min-height: 100vh; padding-top: 80px; }
+    .hero-content h1 { font-size: 36px; }
+    .hero-content p { font-size: 16px; }
+    .split-layout { flex-direction: column; height: auto; }
+    .image-box { min-height: 250px; }
+    .card-video { transform: scale(1); }
 
-    /* Hide non-essential layout classes on mobile */
-    .split-layout, .hero, .report-hero { display: none !important; }
-
-    /* 🚨 TRUE FLEXBOX DASHBOARD (Respects Footer & Scrolling) 🚨 */
+    /* 🚨 TRUE FLEXBOX DASHBOARD (Flush to edges like a real iPhone App) 🚨 */
     .dashboard-wrapper { 
-        position: relative; /* Keeps it in normal page flow! */
-        width: 95%; 
-        height: 85vh; /* Takes up most of the mobile screen */
-        margin: 90px auto 40px auto; /* Clears navbar at top, space at bottom */
-        border-radius: 16px; 
-        border: 1px solid var(--border-color);
+        position: relative;
+        width: 100%; /* Flush to the screen edges */
+        height: calc(100vh - 140px); /* Perfect height math to prevent scrolling off-screen */
+        margin: 80px 0 0 0; /* Right under the navbar */
+        border-radius: 0; /* Removes rounded corners on edges */
+        border-left: none;
+        border-right: none;
         flex-direction: column;
-        display: flex; /* Stacks the map and sidebar cleanly */
+        display: flex; 
         overflow: hidden; 
-        box-shadow: var(--shadow);
-        background: transparent;
+        box-shadow: none;
     }
     
-   /* Map takes the top half */
+    /* Map takes the top half */
     #map-container { 
-        order: 1; /* 🚨 FORCES THE MAP TO THE TOP 🚨 */
+        order: 1; 
         position: relative;
         height: 55%; 
         width: 100%; 
@@ -259,11 +257,11 @@ body.dark-mode .card-video { opacity: 0.8; }
 
     /* 🚨 NATIVE BOTTOM SHEET FORM 🚨 */
     #sidebar { 
-        order: 2; /* 🚨 FORCES THE SIDEBAR TO THE BOTTOM 🚨 */
+        order: 2; 
         position: relative; 
         width: 100%; 
         height: 45%; 
-        padding: 20px 20px 40px 20px; 
+        padding: 20px 20px 80px 20px; /* Extra padding at bottom for iPhone Safari bar */
         background: var(--card-bg);
         z-index: 100;
         border-radius: 24px 24px 0 0; 
@@ -271,6 +269,7 @@ body.dark-mode .card-video { opacity: 0.8; }
         box-shadow: 0 -5px 20px rgba(0,0,0,0.2); 
         border-top: 1px solid var(--border-color);
         overflow-y: auto; 
+        -webkit-overflow-scrolling: touch; /* 🚨 Smooth scrolling on iPhones! */
     }
 
     /* Drag-handle line at the top of the sheet */
