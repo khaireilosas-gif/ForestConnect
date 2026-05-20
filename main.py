@@ -1,23 +1,28 @@
 import os
-import shutil
 import requests
 import re
 import math
+import uuid
 import uvicorn
 from fastapi import FastAPI, HTTPException, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import psycopg2
 from google import genai
+from supabase import create_client, Client
 
 # ==========================================
 # 1. CONFIGURATION & SETUP
 # ==========================================
-# ⚠️ Security Note: Pulling API key from Render Environment Variables!
-import os
+# Google Gemini API
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 client = genai.Client(api_key=GEMINI_API_KEY)
+
+# Supabase Cloud Storage API
+SUPABASE_URL = os.environ.get("SUPABASE_URL")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY) if SUPABASE_URL and SUPABASE_KEY else None
+
 # Connected directly to Render Cloud Database with SSL!
 DATABASE_URL = "postgresql://forestconnect_db_user:b6uaz0jAo7TsUSuOdTEN6WVYhw80gdoE@dpg-d85thc0jo89c7380gd3g-a.singapore-postgres.render.com/forestconnect_db?sslmode=require"
 app = FastAPI()
@@ -30,23 +35,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Folder setup for photo uploads
-os.makedirs("uploads", exist_ok=True)
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
-
 class UserQuery(BaseModel):
     question: str
 
 def get_db_connection():
     try:
-        # psycopg2 can read the URL string directly!
         return psycopg2.connect(DATABASE_URL)
     except Exception as e:
         print(f"❌ Database connection error: {e}")
         return None
 
 # ==========================================
-# 1.5. HOME PAGE ROUTE (FIXES "NOT FOUND")
+# 1.5. HOME PAGE ROUTE
 # ==========================================
 @app.get("/")
 def read_root():
@@ -149,15 +149,35 @@ async def submit_report(
     try:
         cursor = conn.cursor()
         severity = "NORMAL"
-        image_url = None
+        image_url = "[null]"
 
+        # 🚨 NEW CLOUD UPLOAD PIPELINE 🚨
         if file:
-            print(f"📸 Processing image upload: {file.filename}")
-            file_path = f"uploads/{file.filename}"
-            with open(file_path, "wb") as buffer: 
-                shutil.copyfileobj(file.file, buffer)
-            image_url = f"/uploads/{file.filename}"
+            print(f"☁️ Processing cloud upload to Supabase: {file.filename}")
+            try:
+                # 1. Create a unique filename to prevent overwriting
+                file_extension = file.filename.split(".")[-1]
+                unique_filename = f"{uuid.uuid4()}.{file_extension}"
+                
+                # 2. Read the file into memory
+                file_bytes = await file.read()
 
+                # 3. Upload to Supabase bucket
+                if supabase:
+                    supabase.storage.from_("reports").upload(
+                        path=unique_filename,
+                        file=file_bytes,
+                        file_options={"content-type": file.content_type}
+                    )
+                    # 4. Get the permanent URL
+                    image_url = supabase.storage.from_("reports").get_public_url(unique_filename)
+                    print(f"✅ Image secured in cloud: {image_url}")
+                else:
+                    print("⚠️ Supabase keys missing. Image skipped.")
+            except Exception as upload_error:
+                print(f"❌ Cloud Upload Error: {upload_error}")
+
+        # NLP Threat Detection
         critical_keywords = ["chainsaw", "fire", "smoke", "poaching", "illegal", "logging", "gun", "truck"]
         if any(word in description.lower() for word in critical_keywords): 
             severity = "CRITICAL"
@@ -173,7 +193,7 @@ async def submit_report(
             print(f"⚠️ Spatial Check Skipped (Is the 'forest_reserves' table missing?): {geo_error}")
             conn.rollback()
 
-        print("💾 Saving report to PostgreSQL database...")
+        print("💾 Saving spatial report to PostgreSQL database...")
         cursor.execute("""
             INSERT INTO reports (threat_type, description, lat, lng, location, severity, image_url) 
             VALUES (%s, %s, %s, %s, ST_SetSRID(ST_MakePoint(%s, %s), 4326), %s, %s)

@@ -5,3 +5,4 @@ pydantic
 python-multipart
 requests
 google-genai
+supabase==2.4.5
